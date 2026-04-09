@@ -1,0 +1,7 @@
+﻿services:
+  thesisvalidator.api:
+    image: thesisvalidator.api
+    build:
+      context: .
+      dockerfile: ThesisValidator.Api/Dockerfile
+
