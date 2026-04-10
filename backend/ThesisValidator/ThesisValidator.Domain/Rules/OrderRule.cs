@@ -1,8 +1,10 @@
+using ThesisValidator.Domain.Enums;
+
 namespace ThesisValidator.Domain.Rules;
 
 public class OrderRule : ValidationRule
 {
-    public string OrderType { get; set; } = string.Empty;
+    public EOrderType OrderType { get; set; }
 
     public List<string>? ExpectedOrder { get; set; }
 

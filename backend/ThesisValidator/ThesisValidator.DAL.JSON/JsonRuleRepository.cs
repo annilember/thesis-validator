@@ -55,7 +55,7 @@ public class JsonRuleRepository : IRuleRepository
                 "regex" => JsonSerializer.Deserialize<RegexRule>(ruleJson, _jsonOptions),
                 "count" => JsonSerializer.Deserialize<CountRule>(ruleJson, _jsonOptions),
                 "order" => JsonSerializer.Deserialize<OrderRule>(ruleJson, _jsonOptions),
-                "crossReference" => JsonSerializer.Deserialize<CrossReferenceRule>(ruleJson, _jsonOptions),
+                "crossreference" => JsonSerializer.Deserialize<CrossReferenceRule>(ruleJson, _jsonOptions),
                 _ => null
             };
 

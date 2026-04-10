@@ -15,6 +15,89 @@
       "severity": "error",
       "description": "Vasak veeris",
       "message": "Vasak veeris peab olema 3,0 cm"
+    },
+    {
+      "ruleId": "heading_bold",
+      "type": "boolean",
+      "enabled": true,
+      "target": "paragraph",
+      "property": "bold",
+      "expectedValue": true,
+      "severity": "error",
+      "description": "I taseme pealkiri on rasvane",
+      "message": "I taseme pealkiri peab olema rasvane",
+      "styleFilters": [
+        "Heading1"
+      ]
+    },
+    {
+      "ruleId": "text_alignment",
+      "type": "enum",
+      "enabled": true,
+      "target": "paragraph",
+      "property": "alignment",
+      "allowedValues": [
+        "justified"
+      ],
+      "severity": "error",
+      "description": "Põhiteksti joondus",
+      "message": "Põhiteksti joondus peab olema rööpjoondus",
+      "styleFilters": [
+        "Normal"
+      ]
+    },
+    {
+      "ruleId": "heading_numbering_format",
+      "type": "regex",
+      "enabled": true,
+      "target": "paragraph",
+      "property": "text",
+      "pattern": "^\\d+\\s",
+      "severity": "error",
+      "description": "I taseme peakirja nummerduse formaat",
+      "message": "I taseme peakirja number peab olema kujul '1 Pealkiri'",
+      "styleFilters": [
+        "Heading1"
+      ]
+    },
+    {
+      "ruleId": "subsection_min_paragraphs",
+      "type": "count",
+      "enabled": true,
+      "target": "section",
+      "property": "paragraphCount",
+      "minValue": 2,
+      "severity": "warning",
+      "description": "Alampeatüki sisu pikkus",
+      "message": "Alampeatükk peaks sisaldama rohkem kui ühte lõiku"
+    },
+    {
+      "ruleId": "sections_order",
+      "type": "order",
+      "enabled": true,
+      "target": "document",
+      "orderType": "fixed",
+      "expectedOrder": [
+        "Lühikokkuvõte",
+        "Sisukord",
+        "Sissejuhatus",
+        "Kokkuvõte",
+        "Kasutatud kirjandus"
+      ],
+      "severity": "error",
+      "description": "Lõputöö osade järjekord",
+      "message": "Lõputöö osad ei ole õiges järjekorras"
+    },
+    {
+      "ruleId": "glossary_terms_in_text",
+      "type": "crossReference",
+      "sectionTitle": "Lühendite ja mõistete sõnastik",
+      "enabled": true,
+      "target": "document",
+      "referenceTarget": "bodyText",
+      "severity": "warning",
+      "description": "Lühendite sõnastiku terminid esinevad põhitekstis",
+      "message": "Lühendite ja mõistete sõnastiku terminid peavad esinema töö põhitekstis"
     }
   ]
 }
