@@ -8,6 +8,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ThesisValidator.DAL\ThesisValidator.DAL.csproj" />
+      <ProjectReference Include="..\ThesisValidator.Domain\ThesisValidator.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Resources/**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
 </Project>

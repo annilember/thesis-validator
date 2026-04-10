@@ -1,0 +1,21 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+indent_size = 4
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_prefer_braces = true:warning
+resharper_blank_lines_around_single_line_auto_property = 1
+csharp_wrap_parameters_style = chop_if_long
+
+[*.{json,yaml,yml}]
+indent_size = 2
+
+[*.{ts,vue,js}]
+indent_size = 2

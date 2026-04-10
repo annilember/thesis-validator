@@ -1,0 +1,20 @@
+{
+  "templateId": "taltech-it",
+  "name": "TalTech IT-teaduskonna lõputöö vormistusjuhend",
+  "version": "2025",
+  "rules": [
+    {
+      "ruleId": "page_margin_left",
+      "type": "numeric",
+      "enabled": true,
+      "target": "page",
+      "property": "marginLeft",
+      "expectedValue": 3.0,
+      "unit": "cm",
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "Vasak veeris",
+      "message": "Vasak veeris peab olema 3,0 cm"
+    }
+  ]
+}

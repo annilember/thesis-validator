@@ -6,4 +6,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\ThesisValidator.DAL\ThesisValidator.DAL.csproj" />
+      <ProjectReference Include="..\ThesisValidator.Domain\ThesisValidator.Domain.csproj" />
+    </ItemGroup>
+
 </Project>

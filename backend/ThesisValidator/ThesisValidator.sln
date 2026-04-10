@@ -5,6 +5,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B7F29FD1-5D3C-4062-916B-587FC8424F07}"
 	ProjectSection(SolutionItems) = preProject
 		compose.yaml = compose.yaml
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThesisValidator.DAL", "ThesisValidator.DAL\ThesisValidator.DAL.csproj", "{24B0846C-C90A-4EBE-AB2D-A049BF6ABF6D}"
