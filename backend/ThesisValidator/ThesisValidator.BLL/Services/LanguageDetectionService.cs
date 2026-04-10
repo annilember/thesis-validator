@@ -1,6 +1,8 @@
+using ThesisValidator.BLL.Interfaces;
+
 namespace ThesisValidator.BLL.Services;
 
-public class LanguageDetectionService
+public class LanguageDetectionService : ILanguageDetectionService
 {
     
 }

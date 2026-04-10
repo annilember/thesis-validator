@@ -1,6 +1,6 @@
 namespace ThesisValidator.DAL.Docx;
 
-public class DocxRenderingService
+public class DocxRenderingService : IDocumentRenderingService
 {
     
 }

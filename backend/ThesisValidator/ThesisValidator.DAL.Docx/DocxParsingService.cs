@@ -1,6 +1,6 @@
 namespace ThesisValidator.DAL.Docx;
 
-public class DocxParsingService
+public class DocxParsingService : IDocumentParsingService
 {
     
 }

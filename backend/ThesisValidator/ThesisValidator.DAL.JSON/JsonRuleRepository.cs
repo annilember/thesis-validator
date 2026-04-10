@@ -1,6 +1,6 @@
 namespace ThesisValidator.DAL.JSON;
 
-public class JsonRuleRepository
+public class JsonRuleRepository : IRuleRepository
 {
     
 }
