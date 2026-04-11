@@ -14,19 +14,39 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         _logger = logger;
     }
 
-    public double? GetPageMarginLeft(WordprocessingDocument document, EUnit unit)
+    public double? GetPageMarginLeft(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargin(document, unit, m => m.Left?.Value);
+
+    public double? GetPageMarginRight(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargin(document, unit, m => m.Right?.Value);
+
+    public double? GetPageMarginTop(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargin(document, unit, m => m.Top?.Value);
+
+    public double? GetPageMarginBottom(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargin(document, unit, m => m.Bottom?.Value);
+
+    public double? GetPageMarginFooter(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargin(document, unit, m => m.Footer?.Value);
+
+    private double? GetPageMargin(WordprocessingDocument document, EUnit unit, Func<PageMargin, long?> selector)
     {
-        var pageMargin = document.MainDocumentPart?
-            .Document?.Body?
+        var pageMargin = document.MainDocumentPart?.Document?.Body?
             .GetFirstChild<SectionProperties>()?
             .GetFirstChild<PageMargin>();
 
-        if (pageMargin?.Left == null)
+        if (pageMargin == null)
+        {
             return null;
+        }
 
-        var marginValue = UnitConverter.TwipsToUnit(pageMargin.Left.Value, unit);
-        _logger.LogDebug("Left margin raw: {Raw}, converted: {Converted}", pageMargin.Left.Value, marginValue);
-        return marginValue;
+        var value = selector(pageMargin);
+        if (value == null)
+        {
+            return null;
+        }
+
+        return UnitConverter.TwipsToUnit(value.Value, unit);
     }
 
     public bool? GetParagraphBold(WordprocessingDocument document, List<string>? styleFilters)

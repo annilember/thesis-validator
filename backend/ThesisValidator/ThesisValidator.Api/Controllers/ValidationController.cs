@@ -35,7 +35,7 @@ public class ValidationController : ControllerBase
 
         if (!AllowedMimeTypes.Contains(file.ContentType))
         {
-            return BadRequest(new { error = "Vales formaadis fail" });
+            return BadRequest(new { error = "Valitud failiformaat ei ole toetatud" });
         }
 
         try

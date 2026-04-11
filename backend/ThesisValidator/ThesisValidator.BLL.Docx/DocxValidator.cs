@@ -2,6 +2,7 @@ using DocumentFormat.OpenXml.Packaging;
 using Microsoft.Extensions.Logging;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
+using ThesisValidator.BLL.Services;
 using ThesisValidator.DAL;
 using ThesisValidator.Domain;
 using ThesisValidator.Domain.Enums;
@@ -9,64 +10,31 @@ using ThesisValidator.Domain.Rules;
 
 namespace ThesisValidator.BLL.Docx;
 
-public class DocxValidator : IDocumentValidator
+public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 {
-    private readonly IRuleEvaluator _ruleEvaluator;
     private readonly IDocumentParsingService<WordprocessingDocument> _docxParsingService;
     private readonly ILogger<DocxValidator> _logger;
 
     public DocxValidator(
         IRuleEvaluator ruleEvaluator,
         IDocumentParsingService<WordprocessingDocument> docxParsingService,
-        ILogger<DocxValidator> logger)
+        ILogger<DocxValidator> logger) : base(ruleEvaluator)
     {
-        _ruleEvaluator = ruleEvaluator;
         _docxParsingService = docxParsingService;
         _logger = logger;
     }
 
-    public bool CanValidate(string fileExtension)
-    {
-        return fileExtension.Equals(".docx", StringComparison.OrdinalIgnoreCase);
-    }
+    public override bool CanValidate(string fileExtension)
+        => fileExtension.Equals(".docx", StringComparison.OrdinalIgnoreCase);
 
-    public async Task<ValidationResult> ValidateAsync(
-        Stream document,
-        IEnumerable<ValidationRule> rules)
+    public override async Task<ValidationResult> ValidateAsync(Stream document, IEnumerable<ValidationRule> rules)
     {
         using var wordDocument = WordprocessingDocument.Open(document, false);
-        var issues = new List<ValidationIssue>();
-
-        foreach (var rule in rules)
-        {
-            var issue = rule.Enabled
-                ? await ValidateRuleAsync(wordDocument, rule)
-                : ValidationIssue.CreateSkipped(rule.RuleId, "Reegel pole sisse lülitatud");
-
-            issues.Add(issue);
-        }
-
-        return new ValidationResult { Issues = issues };
+        return await ValidateRulesAsync(wordDocument, rules);
     }
 
-    private Task<ValidationIssue> ValidateRuleAsync(
-        WordprocessingDocument document,
-        ValidationRule rule)
-    {
-        return rule switch
-        {
-            NumericRule numeric => ValidateNumericRuleAsync(document, numeric),
-            BooleanRule boolean => ValidateBooleanRuleAsync(document, boolean),
-            EnumRule enumRule => ValidateEnumRuleAsync(document, enumRule),
-            RegexRule regex => ValidateRegexRuleAsync(document, regex),
-            CountRule count => ValidateCountRuleAsync(document, count),
-            OrderRule order => ValidateOrderRuleAsync(document, order),
-            CrossReferenceRule crossRef => ValidateCrossReferenceRuleAsync(document, crossRef),
-            _ => Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Reegli kontrollmehhanism on puudu"))
-        };
-    }
-
-    private async Task<ValidationIssue> ValidateNumericRuleAsync(WordprocessingDocument document, NumericRule rule)
+    protected override async Task<ValidationIssue> ValidateNumericRuleAsync(WordprocessingDocument document,
+        NumericRule rule)
     {
         var actualValue = GetNumericValue(document, rule);
 
@@ -75,10 +43,11 @@ public class DocxValidator : IDocumentValidator
             return ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist");
         }
 
-        return _ruleEvaluator.EvaluateNumeric(rule, actualValue.Value);
+        return RuleEvaluator.EvaluateNumeric(rule, actualValue.Value);
     }
 
-    private async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document, BooleanRule rule)
+    protected override async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document,
+        BooleanRule rule)
     {
         var actualValue = GetBooleanValue(document, rule);
 
@@ -87,10 +56,10 @@ public class DocxValidator : IDocumentValidator
             return ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist");
         }
 
-        return _ruleEvaluator.EvaluateBoolean(rule, actualValue.Value);
+        return RuleEvaluator.EvaluateBoolean(rule, actualValue.Value);
     }
 
-    private Task<ValidationIssue> ValidateEnumRuleAsync(WordprocessingDocument document, EnumRule rule)
+    protected override Task<ValidationIssue> ValidateEnumRuleAsync(WordprocessingDocument document, EnumRule rule)
     {
         var actualValues = GetEnumValues(document, rule);
 
@@ -99,10 +68,10 @@ public class DocxValidator : IDocumentValidator
             return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist"));
         }
 
-        return Task.FromResult(_ruleEvaluator.EvaluateEnum(rule, actualValues));
+        return Task.FromResult(RuleEvaluator.EvaluateEnum(rule, actualValues));
     }
 
-    private Task<ValidationIssue> ValidateRegexRuleAsync(WordprocessingDocument document, RegexRule rule)
+    protected override Task<ValidationIssue> ValidateRegexRuleAsync(WordprocessingDocument document, RegexRule rule)
     {
         var actualValues = _docxParsingService.GetParagraphTexts(document, rule.StyleFilters);
 
@@ -117,14 +86,15 @@ public class DocxValidator : IDocumentValidator
                 rule.RuleId, value, rule.Pattern);
         }
 
-        return Task.FromResult(_ruleEvaluator.EvaluateRegex(rule, actualValues));
+        return Task.FromResult(RuleEvaluator.EvaluateRegex(rule, actualValues));
     }
 
-    private Task<ValidationIssue> ValidateCountRuleAsync(WordprocessingDocument document, CountRule rule)
+    protected override Task<ValidationIssue> ValidateCountRuleAsync(WordprocessingDocument document, CountRule rule)
     {
         var actualCount = (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Section, ERuleProperty.ParagraphCount) => _docxParsingService.GetMinParagraphCountInSubsection(document),
+            (ERuleTarget.Section, ERuleProperty.ParagraphCount) =>
+                _docxParsingService.GetMinParagraphCountInSubsection(document),
             _ => (int?)null
         };
 
@@ -133,10 +103,10 @@ public class DocxValidator : IDocumentValidator
             return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist"));
         }
 
-        return Task.FromResult(_ruleEvaluator.EvaluateCount(rule, actualCount.Value));
+        return Task.FromResult(RuleEvaluator.EvaluateCount(rule, actualCount.Value));
     }
 
-    private Task<ValidationIssue> ValidateOrderRuleAsync(WordprocessingDocument document, OrderRule rule)
+    protected override Task<ValidationIssue> ValidateOrderRuleAsync(WordprocessingDocument document, OrderRule rule)
     {
         var actualOrder = (rule.Target, rule.OrderType) switch
         {
@@ -149,10 +119,10 @@ public class DocxValidator : IDocumentValidator
             return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist"));
         }
 
-        return Task.FromResult(_ruleEvaluator.EvaluateOrder(rule, actualOrder));
+        return Task.FromResult(RuleEvaluator.EvaluateOrder(rule, actualOrder));
     }
 
-    private Task<ValidationIssue> ValidateCrossReferenceRuleAsync(WordprocessingDocument document,
+    protected override Task<ValidationIssue> ValidateCrossReferenceRuleAsync(WordprocessingDocument document,
         CrossReferenceRule rule)
     {
         var result = (rule.Target, rule.ReferenceTarget) switch
@@ -168,7 +138,11 @@ public class DocxValidator : IDocumentValidator
     {
         return (rule.Target, rule.Property) switch
         {
+            (ERuleTarget.Page, ERuleProperty.MarginTop) => _docxParsingService.GetPageMarginTop(document, rule.Unit),
+            (ERuleTarget.Page, ERuleProperty.MarginBottom) => _docxParsingService.GetPageMarginBottom(document, rule.Unit),
             (ERuleTarget.Page, ERuleProperty.MarginLeft) => _docxParsingService.GetPageMarginLeft(document, rule.Unit),
+            (ERuleTarget.Page, ERuleProperty.MarginRight) => _docxParsingService.GetPageMarginRight(document, rule.Unit),
+            (ERuleTarget.Page, ERuleProperty.MarginFooter) => _docxParsingService.GetPageMarginFooter(document, rule.Unit),
             _ => null
         };
     }
@@ -177,7 +151,8 @@ public class DocxValidator : IDocumentValidator
     {
         return (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Paragraph, ERuleProperty.Bold) => _docxParsingService.GetParagraphBold(document, rule.StyleFilters),
+            (ERuleTarget.Paragraph, ERuleProperty.Bold) => _docxParsingService.GetParagraphBold(document,
+                rule.StyleFilters),
             _ => null
         };
     }
@@ -186,7 +161,8 @@ public class DocxValidator : IDocumentValidator
     {
         return (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Paragraph, ERuleProperty.Alignment) => _docxParsingService.GetParagraphAlignments(document, rule.StyleFilters),
+            (ERuleTarget.Paragraph, ERuleProperty.Alignment) => _docxParsingService.GetParagraphAlignments(document,
+                rule.StyleFilters),
             _ => null
         };
     }
@@ -207,6 +183,6 @@ public class DocxValidator : IDocumentValidator
                 bodyText.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
 
-        return _ruleEvaluator.EvaluateCrossReference(rule, terms, bodyText);
+        return RuleEvaluator.EvaluateCrossReference(rule, terms, bodyText);
     }
 }

@@ -4,6 +4,32 @@
   "version": "2025",
   "rules": [
     {
+      "ruleId": "page_margin_top",
+      "type": "numeric",
+      "enabled": true,
+      "target": "page",
+      "property": "marginTop",
+      "expectedValue": 2.5,
+      "unit": "cm",
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "Ülemine veeris",
+      "message": "Ülemine veeris peab olema 2,5 cm"
+    },
+    {
+      "ruleId": "page_margin_bottom",
+      "type": "numeric",
+      "enabled": true,
+      "target": "page",
+      "property": "marginBottom",
+      "expectedValue": 2.5,
+      "unit": "cm",
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "Alumine veeris",
+      "message": "Alumine veeris peab olema 2,5 cm"
+    },
+    {
       "ruleId": "page_margin_left",
       "type": "numeric",
       "enabled": true,
@@ -15,6 +41,32 @@
       "severity": "error",
       "description": "Vasak veeris",
       "message": "Vasak veeris peab olema 3,0 cm"
+    },
+    {
+      "ruleId": "page_margin_right",
+      "type": "numeric",
+      "enabled": true,
+      "target": "page",
+      "property": "marginRight",
+      "expectedValue": 3.0,
+      "unit": "cm",
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "Parem veeris",
+      "message": "Parem veeris peab olema 3,0 cm"
+    },
+    {
+      "ruleId": "page_margin_footer",
+      "type": "numeric",
+      "enabled": true,
+      "target": "page",
+      "property": "marginFooter",
+      "expectedValue": 1.5,
+      "unit": "cm",
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "Leheküljenumbri kaugus servast",
+      "message": "Leheküljenumber peab asuma 1,5 cm kaugusel alumisest servast"
     },
     {
       "ruleId": "heading_bold",
