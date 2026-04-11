@@ -4,7 +4,7 @@ namespace ThesisValidator.Domain.Rules;
 
 public class NumericRule : ValidationRule
 {
-    public string Property { get; set; } = string.Empty;
+    public ERuleProperty Property { get; set; }
 
     public double ExpectedValue { get; set; }
 

@@ -4,8 +4,7 @@ namespace ThesisValidator.BLL.Models;
 
 public class ValidationResult
 {
-    // TODO: remove string.Empty where not needed explicitly.
-    public string TemplateId { get; set; } = string.Empty;
+    public string TemplateId { get; set; } = null!;
 
     public string FileName { get; set; } = string.Empty;
 

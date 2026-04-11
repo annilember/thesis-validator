@@ -1,8 +1,10 @@
+using ThesisValidator.Domain.Enums;
+
 namespace ThesisValidator.Domain.Rules;
 
 public class BooleanRule : ValidationRule
 {
-    public string Property { get; set; } = string.Empty;
+    public ERuleProperty Property { get; set; }
 
     public bool ExpectedValue { get; set; }
 }

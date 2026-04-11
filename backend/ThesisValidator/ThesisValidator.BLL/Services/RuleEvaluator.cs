@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
+using ThesisValidator.Domain;
 using ThesisValidator.Domain.Enums;
 using ThesisValidator.Domain.Rules;
 
@@ -8,61 +9,37 @@ namespace ThesisValidator.BLL.Services;
 
 public class RuleEvaluator : IRuleEvaluator
 {
-    //TODO: tee ühine meetod kui saab.
     public ValidationIssue EvaluateNumeric(NumericRule rule, double actualValue)
     {
         var difference = Math.Abs(actualValue - rule.ExpectedValue);
 
-        if (difference <= rule.Tolerance)
-        {
-            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
-        }
-
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        return Evaluate(rule, difference <= rule.Tolerance);
     }
 
     public ValidationIssue EvaluateBoolean(BooleanRule rule, bool actualValue)
     {
-        if (actualValue == rule.ExpectedValue)
-        {
-            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
-        }
-
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        return Evaluate(rule, actualValue == rule.ExpectedValue);
     }
 
     public ValidationIssue EvaluateEnum(EnumRule rule, List<string> actualValues)
     {
         var allMatch = actualValues.All(v => rule.AllowedValues.Contains(v));
 
-        if (allMatch)
-        {
-            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
-        }
-
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        return Evaluate(rule, allMatch);
     }
 
     public ValidationIssue EvaluateRegex(RegexRule rule, List<string> actualValues)
     {
         var allMatch = actualValues.All(v => Regex.IsMatch(v, rule.Pattern));
 
-        if (allMatch)
-        {
-            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
-        }
-
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        return Evaluate(rule, allMatch);
     }
 
     public ValidationIssue EvaluateCount(CountRule rule, int actualCount)
     {
-        if (actualCount >= rule.MinValue && (rule.MaxValue == null || actualCount <= rule.MaxValue))
-        {
-            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
-        }
+        var countIsInBounds = actualCount >= rule.MinValue && (rule.MaxValue == null || actualCount <= rule.MaxValue);
 
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        return Evaluate(rule, countIsInBounds);
     }
 
     public ValidationIssue EvaluateOrder(OrderRule rule, List<string> actualOrder)
@@ -108,5 +85,12 @@ public class RuleEvaluator : IRuleEvaluator
         }
 
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+    }
+
+    private static ValidationIssue Evaluate(ValidationRule rule, bool passed)
+    {
+        return passed
+            ? ValidationIssue.CreatePassed(rule.RuleId, rule.Description)
+            : ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
     }
 }

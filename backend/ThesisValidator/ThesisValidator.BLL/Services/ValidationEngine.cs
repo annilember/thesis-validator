@@ -1,3 +1,4 @@
+using System.Net;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
 using ThesisValidator.DAL;
@@ -28,16 +29,14 @@ public class ValidationEngine : IValidationEngine
         var template = await _ruleRepository.GetTemplateAsync(templateId);
         if (template == null)
         {
-            // TODO: make this return more accurate?
-            return new ValidationResult { FileName = fileName, TemplateId = templateId };
+            throw new TemplateNotFoundException(templateId);
         }
 
         var extension = Path.GetExtension(fileName).ToLowerInvariant();
         var validator = _validators.FirstOrDefault(v => v.CanValidate(extension));
         if (validator == null)
         {
-            // TODO: make this return more accurate?
-            return new ValidationResult { FileName = fileName, TemplateId = templateId };
+            throw new UnsupportedFormatException(extension);
         }
 
         var applicableRules = template.Rules.Where(r =>
@@ -45,7 +44,7 @@ public class ValidationEngine : IValidationEngine
             (r.Language == null || r.Language == language) &&
             (r.CurriculumLanguage == null || r.CurriculumLanguage == curriculumLanguage));
 
-        var result = await validator.ValidateAsync(document, applicableRules, language);
+        var result = await validator.ValidateAsync(document, applicableRules);
         result.FileName = fileName;
         result.TemplateId = templateId;
 

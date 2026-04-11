@@ -60,7 +60,9 @@ public class JsonRuleRepository : IRuleRepository
             };
 
             if (rule != null)
+            {
                 template.Rules.Add(rule);
+            }
         }
 
         return template;

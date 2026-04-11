@@ -1,8 +1,10 @@
+using ThesisValidator.Domain.Enums;
+
 namespace ThesisValidator.Domain.Rules;
 
 public class RegexRule : ValidationRule
 {
-    public string Property { get; set; } = string.Empty;
+    public ERuleProperty Property { get; set; }
 
     public string Pattern { get; set; } = string.Empty;
 }

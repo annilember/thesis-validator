@@ -10,7 +10,7 @@ public abstract class ValidationRule
 
     public bool Enabled { get; set; }
 
-    public string Target { get; set; } = string.Empty;
+    public ERuleTarget Target { get; set; }
 
     public List<string>? StyleFilters { get; set; }
 

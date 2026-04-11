@@ -1,8 +1,10 @@
+using ThesisValidator.Domain.Enums;
+
 namespace ThesisValidator.Domain.Rules;
 
 public class EnumRule : ValidationRule
 {
-    public string Property { get; set; } = string.Empty;
+    public ERuleProperty Property { get; set; }
 
     public List<string> AllowedValues { get; set; } = [];
 }

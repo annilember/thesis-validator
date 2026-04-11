@@ -1,8 +1,10 @@
+using ThesisValidator.Domain.Enums;
+
 namespace ThesisValidator.Domain.Rules;
 
 public class CrossReferenceRule : ValidationRule
 {
-    public string ReferenceTarget { get; set; } = string.Empty;
+    public EReferenceTarget ReferenceTarget { get; set; }
 
     public string? SectionTitle { get; set; }
 }

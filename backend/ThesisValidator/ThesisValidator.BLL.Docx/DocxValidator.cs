@@ -12,12 +12,12 @@ namespace ThesisValidator.BLL.Docx;
 public class DocxValidator : IDocumentValidator
 {
     private readonly IRuleEvaluator _ruleEvaluator;
-    private readonly IDocumentParsingService _docxParsingService;
+    private readonly IDocumentParsingService<WordprocessingDocument> _docxParsingService;
     private readonly ILogger<DocxValidator> _logger;
 
     public DocxValidator(
         IRuleEvaluator ruleEvaluator,
-        IDocumentParsingService docxParsingService,
+        IDocumentParsingService<WordprocessingDocument> docxParsingService,
         ILogger<DocxValidator> logger)
     {
         _ruleEvaluator = ruleEvaluator;
@@ -32,8 +32,7 @@ public class DocxValidator : IDocumentValidator
 
     public async Task<ValidationResult> ValidateAsync(
         Stream document,
-        IEnumerable<ValidationRule> rules,
-        ESupportedLanguage language)
+        IEnumerable<ValidationRule> rules)
     {
         using var wordDocument = WordprocessingDocument.Open(document, false);
         var issues = new List<ValidationIssue>();
@@ -41,7 +40,7 @@ public class DocxValidator : IDocumentValidator
         foreach (var rule in rules)
         {
             var issue = rule.Enabled
-                ? await ValidateRuleAsync(wordDocument, rule, language)
+                ? await ValidateRuleAsync(wordDocument, rule)
                 : ValidationIssue.CreateSkipped(rule.RuleId, "Reegel pole sisse lülitatud");
 
             issues.Add(issue);
@@ -52,26 +51,24 @@ public class DocxValidator : IDocumentValidator
 
     private Task<ValidationIssue> ValidateRuleAsync(
         WordprocessingDocument document,
-        ValidationRule rule,
-        ESupportedLanguage language)
+        ValidationRule rule)
     {
-        return rule.Type switch
+        return rule switch
         {
-            // TODO: casting ok here?
-            ERuleType.Numeric => ValidateNumericRuleAsync(document, (NumericRule)rule),
-            ERuleType.Boolean => ValidateBooleanRuleAsync(document, (BooleanRule)rule),
-            ERuleType.Enum => ValidateEnumRuleAsync(document, (EnumRule)rule),
-            ERuleType.Regex => ValidateRegexRuleAsync(document, (RegexRule)rule),
-            ERuleType.Count => ValidateCountRuleAsync(document, (CountRule)rule),
-            ERuleType.Order => ValidateOrderRuleAsync(document, (OrderRule)rule),
-            ERuleType.CrossReference => ValidateCrossReferenceRuleAsync(document, (CrossReferenceRule)rule),
-            _ => Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Reegli kontrollmehhanism on puudu")),
+            NumericRule numeric => ValidateNumericRuleAsync(document, numeric),
+            BooleanRule boolean => ValidateBooleanRuleAsync(document, boolean),
+            EnumRule enumRule => ValidateEnumRuleAsync(document, enumRule),
+            RegexRule regex => ValidateRegexRuleAsync(document, regex),
+            CountRule count => ValidateCountRuleAsync(document, count),
+            OrderRule order => ValidateOrderRuleAsync(document, order),
+            CrossReferenceRule crossRef => ValidateCrossReferenceRuleAsync(document, crossRef),
+            _ => Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Reegli kontrollmehhanism on puudu"))
         };
     }
 
     private async Task<ValidationIssue> ValidateNumericRuleAsync(WordprocessingDocument document, NumericRule rule)
     {
-        var actualValue = await GetNumericValueAsync(document, rule);
+        var actualValue = GetNumericValue(document, rule);
 
         if (actualValue == null)
         {
@@ -83,10 +80,12 @@ public class DocxValidator : IDocumentValidator
 
     private async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document, BooleanRule rule)
     {
-        var actualValue = await GetBooleanValueAsync(document, rule);
+        var actualValue = GetBooleanValue(document, rule);
 
         if (actualValue == null)
+        {
             return ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist");
+        }
 
         return _ruleEvaluator.EvaluateBoolean(rule, actualValue.Value);
     }
@@ -125,8 +124,7 @@ public class DocxValidator : IDocumentValidator
     {
         var actualCount = (rule.Target, rule.Property) switch
         {
-            //TODO: add enums for target and property?
-            ("section", "paragraphCount") => _docxParsingService.GetMinParagraphCountInSubsection(document),
+            (ERuleTarget.Section, ERuleProperty.ParagraphCount) => _docxParsingService.GetMinParagraphCountInSubsection(document),
             _ => (int?)null
         };
 
@@ -142,13 +140,14 @@ public class DocxValidator : IDocumentValidator
     {
         var actualOrder = (rule.Target, rule.OrderType) switch
         {
-            //TODO: add enums for target and property?
-            ("document", EOrderType.Fixed) => _docxParsingService.GetSectionTitles(document),
+            (ERuleTarget.Document, EOrderType.Fixed) => _docxParsingService.GetSectionTitles(document),
             _ => null
         };
 
         if (actualOrder == null)
+        {
             return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Väärtust ei leitud dokumendist"));
+        }
 
         return Task.FromResult(_ruleEvaluator.EvaluateOrder(rule, actualOrder));
     }
@@ -158,30 +157,27 @@ public class DocxValidator : IDocumentValidator
     {
         var result = (rule.Target, rule.ReferenceTarget) switch
         {
-            //TODO: add enums for target and property?
-            ("document", "bodyText") => EvaluateGlossaryTermsInText(document, rule),
+            (ERuleTarget.Document, EReferenceTarget.BodyText) => EvaluateGlossaryTermsInText(document, rule),
             _ => ValidationIssue.CreateSkipped(rule.RuleId, "Reegli kontrollmehhanism on puudu")
         };
 
         return Task.FromResult(result);
     }
 
-    private async Task<double?> GetNumericValueAsync(WordprocessingDocument document, NumericRule rule)
+    private double? GetNumericValue(WordprocessingDocument document, NumericRule rule)
     {
         return (rule.Target, rule.Property) switch
         {
-            //TODO: add enums for target and property?
-            ("page", "marginLeft") => _docxParsingService.GetPageMarginLeft(document, rule.Unit),
+            (ERuleTarget.Page, ERuleProperty.MarginLeft) => _docxParsingService.GetPageMarginLeft(document, rule.Unit),
             _ => null
         };
     }
 
-    private async Task<bool?> GetBooleanValueAsync(WordprocessingDocument document, BooleanRule rule)
+    private bool? GetBooleanValue(WordprocessingDocument document, BooleanRule rule)
     {
         return (rule.Target, rule.Property) switch
         {
-            //TODO: add enums for target and property?
-            ("paragraph", "bold") => _docxParsingService.GetParagraphBold(document, rule.StyleFilters),
+            (ERuleTarget.Paragraph, ERuleProperty.Bold) => _docxParsingService.GetParagraphBold(document, rule.StyleFilters),
             _ => null
         };
     }
@@ -190,8 +186,7 @@ public class DocxValidator : IDocumentValidator
     {
         return (rule.Target, rule.Property) switch
         {
-            //TODO: add enums for target and property?
-            ("paragraph", "alignment") => _docxParsingService.GetParagraphAlignments(document, rule.StyleFilters),
+            (ERuleTarget.Paragraph, ERuleProperty.Alignment) => _docxParsingService.GetParagraphAlignments(document, rule.StyleFilters),
             _ => null
         };
     }

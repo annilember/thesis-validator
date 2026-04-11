@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using DocumentFormat.OpenXml.Packaging;
 using ThesisValidator.Api.Configuration;
 using ThesisValidator.BLL.Docx;
 using ThesisValidator.BLL.Interfaces;
@@ -24,7 +25,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // DAL
-builder.Services.AddScoped<IDocumentParsingService, DocxParsingService>();
+builder.Services.AddScoped<IDocumentParsingService<WordprocessingDocument>, DocxParsingService>();
 builder.Services.AddScoped<IRuleRepository, JsonRuleRepository>();
 
 // BLL

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ThesisValidator.BLL;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.Domain.Enums;
 
@@ -9,6 +10,9 @@ namespace ThesisValidator.Api.Controllers;
 public class ValidationController : ControllerBase
 {
     private readonly IValidationEngine _validationEngine;
+
+    private static readonly string[] AllowedMimeTypes =
+        ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
     public ValidationController(IValidationEngine validationEngine)
     {
@@ -24,20 +28,40 @@ public class ValidationController : ControllerBase
         [FromForm] ESupportedLanguage curriculumLanguage = ESupportedLanguage.Et,
         [FromForm] string? foreignTitle = null)
     {
-        // TODO: maybe validate MIME type.
-
         if (file == null || file.Length == 0)
+        {
             return BadRequest(new { error = "Faili laadimine ebaõnnestus" });
+        }
 
-        await using var stream = file.OpenReadStream();
-        var result = await _validationEngine.ValidateAsync(
-            stream,
-            file.FileName,
-            language, templateId,
-            thesisType,
-            curriculumLanguage,
-            foreignTitle);
+        if (!AllowedMimeTypes.Contains(file.ContentType))
+        {
+            return BadRequest(new { error = "Vales formaadis fail" });
+        }
 
-        return Ok(result);
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var result = await _validationEngine.ValidateAsync(
+                stream,
+                file.FileName,
+                language, templateId,
+                thesisType,
+                curriculumLanguage,
+                foreignTitle);
+
+            return Ok(result);
+        }
+        catch (TemplateNotFoundException exception)
+        {
+            return NotFound(new { error = exception.Message });
+        }
+        catch (UnsupportedFormatException exception)
+        {
+            return BadRequest(new { error = exception.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Valideerimine ebaõnnestus. Palun proovi uuesti." });
+        }
     }
 }

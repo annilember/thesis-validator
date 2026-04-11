@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ThesisValidator.DAL.Docx;
 
-public class DocxParsingService : IDocumentParsingService
+public class DocxParsingService : IDocumentParsingService<WordprocessingDocument>
 {
     private readonly ILogger<DocxParsingService> _logger;
 

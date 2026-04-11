@@ -13,10 +13,10 @@ export abstract class BaseService {
     }
   )
 
-  protected static handleError(error: Error) {
-    console.log('error: ', error.message);
-    return {
-      errors: [JSON.stringify(error)]
-    };
+  protected static handleError(error: unknown): { errors: string[] } {
+    if (Axios.isAxiosError(error) && error.response?.data?.error) {
+      return { errors: [error.response.data.error] }
+    }
+    return { errors: ['Valideerimine ebaõnnestus. Palun proovi uuesti.'] }
   }
 }

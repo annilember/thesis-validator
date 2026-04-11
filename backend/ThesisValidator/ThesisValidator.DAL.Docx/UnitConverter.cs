@@ -12,7 +12,6 @@ public static class UnitConverter
         _ => throw new ArgumentOutOfRangeException(nameof(unit))
     };
 
-    // TODO: check that conversions are correct.
     private static double TwipsToCm(long twips) => twips / 1440.0 * 2.54;
 
     private static double HalfPointsToPt(int halfPoints) => halfPoints / 2.0;
