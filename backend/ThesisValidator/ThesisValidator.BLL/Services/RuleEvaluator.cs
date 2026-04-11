@@ -16,6 +16,12 @@ public class RuleEvaluator : IRuleEvaluator
         return Evaluate(rule, difference <= rule.Tolerance);
     }
 
+    public ValidationIssue EvaluateNumeric(NumericRule rule, List<double> actualValues)
+    {
+        var allMatch = actualValues.All(v => Math.Abs(v - rule.ExpectedValue) <= rule.Tolerance);
+        return Evaluate(rule, allMatch);
+    }
+
     public ValidationIssue EvaluateBoolean(BooleanRule rule, bool actualValue)
     {
         return Evaluate(rule, actualValue == rule.ExpectedValue);
@@ -48,11 +54,11 @@ public class RuleEvaluator : IRuleEvaluator
         {
             if (rule.ExpectedOrder == null)
             {
-                return ValidationIssue.CreateSkipped(rule.RuleId, "Oodatav järjekord puudub");
+                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Oodatav järjekord puudub");
             }
 
             var expectedInActual = rule.ExpectedOrder
-                .Where(e => actualOrder.Contains(e))
+                .Where(actualOrder.Contains)
                 .ToList();
 
             var actualFiltered = actualOrder
@@ -67,14 +73,14 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
         }
 
-        return ValidationIssue.CreateSkipped(rule.RuleId, "Reegli tüüp pole toetatud");
+        return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Reegli tüüp pole toetatud");
     }
 
     public ValidationIssue EvaluateCrossReference(CrossReferenceRule rule, List<string> terms, string bodyText)
     {
         if (terms.Count == 0)
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, "Lühendite sõnastik on tühi");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Lühendite sõnastik on tühi");
         }
 
         var allFound = terms.All(term => bodyText.Contains(term, StringComparison.OrdinalIgnoreCase));

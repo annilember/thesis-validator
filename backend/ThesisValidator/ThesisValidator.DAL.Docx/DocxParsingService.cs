@@ -31,6 +31,7 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
     private double? GetPageMargin(WordprocessingDocument document, EUnit unit, Func<PageMargin, long?> selector)
     {
+        // TODO: kontrolli kõiki sektsioone
         var pageMargin = document.MainDocumentPart?.Document?.Body?
             .GetFirstChild<SectionProperties>()?
             .GetFirstChild<PageMargin>();
@@ -47,6 +48,52 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         }
 
         return UnitConverter.TwipsToUnit(value.Value, unit);
+    }
+
+    public List<double> GetParagraphFontSizes(WordprocessingDocument document, List<string>? styleFilters)
+    {
+        var body = document.MainDocumentPart?.Document?.Body;
+        if (body == null)
+        {
+            return [];
+        }
+
+        _logger.LogDebug("All styles in document: {Styles}",
+            string.Join(", ", body.Descendants<Paragraph>()
+                .Select(p => p.ParagraphProperties?.ParagraphStyleId?.Val?.Value)
+                .Distinct()
+                .Where(s => s != null)));
+
+        var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
+
+        if (styleFilters != null && styleFilters.Count > 0)
+        {
+            paragraphs = paragraphs.Where(p =>
+            {
+                var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                return styleFilters.Contains(styleId ?? string.Empty) ||
+                       (styleId == null && styleFilters.Contains(DocxStyles.Normal));
+            });
+        }
+
+        var fontSizes = new List<double>();
+
+        foreach (var paragraph in paragraphs)
+        {
+            var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+
+            var effectiveStyleId = styleId ?? DocxStyles.Normal;
+            var halfPoints = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+
+            if (halfPoints != null)
+            {
+                fontSizes.Add(UnitConverter.HalfPointsToPt((int)halfPoints));
+            }
+
+            _logger.LogDebug("FontSize - StyleId: {Style}, HalfPoints: {HalfPoints}, Pt: {Pt}", styleId, halfPoints, halfPoints != null ? UnitConverter.HalfPointsToPt((int)halfPoints) : null);
+        }
+
+        return fontSizes;
     }
 
     public bool? GetParagraphBold(WordprocessingDocument document, List<string>? styleFilters)

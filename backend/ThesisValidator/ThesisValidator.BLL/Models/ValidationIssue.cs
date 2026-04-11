@@ -14,11 +14,11 @@ public class ValidationIssue
 
     public ERuleSeverity? Severity { get; set; }
 
-    public static ValidationIssue CreateSkipped(string ruleId, string reason) => new()
+    public static ValidationIssue CreateSkipped(string ruleId, string message, string reason) => new()
     {
         RuleId = ruleId,
         Skipped = true,
-        Message = reason
+        Message = $"{message}: {reason}"
     };
 
     public static ValidationIssue CreatePassed(string ruleId, string description) => new()

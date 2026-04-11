@@ -28,7 +28,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
         {
             var issue = rule.Enabled
                 ? await ValidateRuleAsync(document, rule)
-                : ValidationIssue.CreateSkipped(rule.RuleId, "Reegel pole sisse lülitatud");
+                : ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Reegel pole sisse lülitatud");
 
             issues.Add(issue);
         }
@@ -47,7 +47,10 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
             CountRule count => ValidateCountRuleAsync(document, count),
             OrderRule order => ValidateOrderRuleAsync(document, order),
             CrossReferenceRule crossRef => ValidateCrossReferenceRuleAsync(document, crossRef),
-            _ => Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, "Reegli kontrollmehhanism on puudu"))
+            _ => Task.FromResult(ValidationIssue.CreateSkipped(
+                rule.RuleId,
+                rule.Message,
+                "Reegli kontrollmehhanism on puudu"))
         };
     }
 

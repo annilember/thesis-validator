@@ -10,6 +10,8 @@ public interface IDocumentParsingService<TDocument>
 
     double? GetPageMarginRight(TDocument document, EUnit unit);
     double? GetPageMarginFooter(TDocument document, EUnit unit);
+
+    List<double> GetParagraphFontSizes(TDocument document, List<string>? styleFilters);
     bool? GetParagraphBold(TDocument document, List<string>? styleFilters);
     List<string> GetParagraphAlignments(TDocument document, List<string>? styleFilters);
     List<string> GetParagraphTexts(TDocument document, List<string>? styleFilters);

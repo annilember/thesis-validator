@@ -4,6 +4,8 @@ namespace ThesisValidator.DAL.Docx;
 
 public static class UnitConverter
 {
+    public static double HalfPointsToPt(int halfPoints) => halfPoints / 2.0;
+
     public static double TwipsToUnit(long twips, EUnit unit) => unit switch
     {
         EUnit.Cm => TwipsToCm(twips),
@@ -13,8 +15,6 @@ public static class UnitConverter
     };
 
     private static double TwipsToCm(long twips) => twips / 1440.0 * 2.54;
-
-    private static double HalfPointsToPt(int halfPoints) => halfPoints / 2.0;
 
     private static double TwipsToMm(long twips) => twips / 1440.0 * 25.4;
 

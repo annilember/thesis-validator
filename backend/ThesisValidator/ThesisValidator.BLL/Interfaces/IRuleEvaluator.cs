@@ -6,6 +6,7 @@ namespace ThesisValidator.BLL.Interfaces;
 public interface IRuleEvaluator
 {
     ValidationIssue EvaluateNumeric(NumericRule rule, double actualValue);
+    ValidationIssue EvaluateNumeric(NumericRule rule, List<double> actualValues);
 
     ValidationIssue EvaluateBoolean(BooleanRule rule, bool actualValue);
 
@@ -16,6 +17,6 @@ public interface IRuleEvaluator
     ValidationIssue EvaluateCount(CountRule rule, int actualCount);
 
     ValidationIssue EvaluateOrder(OrderRule rule, List<string> actualOrder);
-    
+
     ValidationIssue EvaluateCrossReference(CrossReferenceRule rule, List<string> terms, string bodyText);
 }
