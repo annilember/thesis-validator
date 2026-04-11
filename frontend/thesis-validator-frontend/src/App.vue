@@ -1,9 +1,17 @@
-<script setup lang="ts"></script>
+vue
+<script setup lang="ts">
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
+</script>
 
 <template>
-  <main>
-    <RouterView />
-  </main>
+  <div class="min-h-screen bg-gray-50 flex flex-col">
+    <Header />
+    <main class="flex-1">
+      <RouterView />
+    </main>
+    <Footer />
+  </div>
 </template>
 
 <style scoped></style>

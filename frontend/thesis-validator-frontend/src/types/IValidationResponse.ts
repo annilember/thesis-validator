@@ -1,4 +1,8 @@
+import type { IValidationIssue } from "./IValidationIssue"
+
 export interface IValidationResponse {
-  status: string;
-  fileName: string;
+  templateId: string
+  fileName: string
+  issues: IValidationIssue[]
+  isValid: boolean
 }

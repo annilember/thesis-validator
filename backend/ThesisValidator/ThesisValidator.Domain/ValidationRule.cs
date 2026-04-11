@@ -19,4 +19,10 @@ public abstract class ValidationRule
     public string Description { get; set; } = string.Empty;
 
     public string Message { get; set; } = string.Empty;
+
+    public EThesisType? ThesisType { get; set; }
+
+    public ESupportedLanguage? Language { get; set; }
+
+    public ESupportedLanguage? CurriculumLanguage { get; set; }
 }

@@ -20,11 +20,15 @@ public class ValidationEngine : IValidationEngine
         Stream document,
         string fileName,
         ESupportedLanguage language,
-        string templateId)
+        string templateId,
+        EThesisType thesisType,
+        ESupportedLanguage curriculumLanguage,
+        string? foreignTitle)
     {
         var template = await _ruleRepository.GetTemplateAsync(templateId);
         if (template == null)
         {
+            // TODO: make this return more accurate?
             return new ValidationResult { FileName = fileName, TemplateId = templateId };
         }
 
@@ -36,7 +40,12 @@ public class ValidationEngine : IValidationEngine
             return new ValidationResult { FileName = fileName, TemplateId = templateId };
         }
 
-        var result = await validator.ValidateAsync(document, template, language);
+        var applicableRules = template.Rules.Where(r =>
+            (r.ThesisType == null || r.ThesisType == thesisType) &&
+            (r.Language == null || r.Language == language) &&
+            (r.CurriculumLanguage == null || r.CurriculumLanguage == curriculumLanguage));
+
+        var result = await validator.ValidateAsync(document, applicableRules, language);
         result.FileName = fileName;
         result.TemplateId = templateId;
 

@@ -32,13 +32,13 @@ public class DocxValidator : IDocumentValidator
 
     public async Task<ValidationResult> ValidateAsync(
         Stream document,
-        ValidationTemplate template,
+        IEnumerable<ValidationRule> rules,
         ESupportedLanguage language)
     {
         using var wordDocument = WordprocessingDocument.Open(document, false);
         var issues = new List<ValidationIssue>();
 
-        foreach (var rule in template.Rules)
+        foreach (var rule in rules)
         {
             var issue = rule.Enabled
                 ? await ValidateRuleAsync(wordDocument, rule, language)

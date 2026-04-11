@@ -12,24 +12,35 @@ export class ValidationService extends BaseService {
     }
   }
 
-  async validateAsync(file: FormData): Promise<IResponseObject<IValidationResponse>> {
+  async validateAsync(
+    file: FormData,
+    language: string = 'et',
+    templateId: string = 'taltech-it',
+    thesisType: string = 'bachelor',
+    curriculumLanguage: string = 'et',
+    foreignTitle: string = ''
+  ): Promise<IResponseObject<IValidationResponse>> {
     try {
+      file.append('language', language)
+      file.append('templateId', templateId)
+      file.append('thesisType', thesisType)
+      file.append('curriculumLanguage', curriculumLanguage)
+      if (foreignTitle) file.append('foreignTitle', foreignTitle)
+
       const response = await BaseService.axios.post<IValidationResponse>(
         this.endpointPath,
         file,
         this.options
-      );
-
-      console.log('request response', response);
+      )
 
       if (response.status <= 300) {
-        return { data: response.data };
+        return { data: response.data }
       }
       return {
         errors: [(response.status.toString() + ' ' + response.statusText).trim()]
-      };
+      }
     } catch (error) {
-      return BaseService.handleError(error as Error);
+      return BaseService.handleError(error as Error)
     }
   }
 }

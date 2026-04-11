@@ -9,5 +9,8 @@ public interface IValidationEngine
         Stream document,
         string fileName,
         ESupportedLanguage language,
-        string templateId);
+        string templateId,
+        EThesisType thesisType,
+        ESupportedLanguage curriculumLanguage,
+        string? foreignTitle);
 }
