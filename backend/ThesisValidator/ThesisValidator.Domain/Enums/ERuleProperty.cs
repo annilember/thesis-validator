@@ -2,6 +2,7 @@ namespace ThesisValidator.Domain.Enums;
 
 public enum ERuleProperty
 {
+    AbstractPageLength,
     MarginLeft,
     MarginRight,
     MarginTop,

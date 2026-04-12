@@ -4,6 +4,7 @@ namespace ThesisValidator.BLL.Models;
 
 public class ValidationIssue
 {
+    // TODO: lisa isPartial väli osaliselt automatiseeritavate reeglite jaoks.
     public string RuleId { get; set; } = string.Empty;
 
     public bool Passed { get; set; }

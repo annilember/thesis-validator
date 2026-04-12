@@ -4,5 +4,6 @@ public enum EUnit
 {
     Cm,
     Pt,
-    Mm
+    Mm,
+    Page
 }

@@ -83,20 +83,6 @@
       "styleFilters": ["Normal"]
     },
     {
-      "ruleId": "font_size_footnote",
-      "type": "numeric",
-      "enabled": false,
-      "target": "paragraph",
-      "property": "fontSize",
-      "expectedValue": 10.0,
-      "unit": "pt",
-      "tolerance": 0.5,
-      "severity": "error",
-      "description": "Allmärkuse fondi suurus",
-      "message": "Allmärkuse fondi suurus peab olema 10 pt",
-      "styleFilters": ["FootnoteText"]
-    },
-    {
       "ruleId": "font_size_heading1",
       "type": "numeric",
       "enabled": true,
@@ -227,7 +213,7 @@
     {
       "ruleId": "heading_numbering_format",
       "type": "regex",
-      "enabled": true,
+      "enabled": false,
       "target": "paragraph",
       "property": "text",
       "pattern": "^\\d+\\s",
@@ -273,9 +259,22 @@
       "enabled": true,
       "target": "document",
       "referenceTarget": "bodyText",
-      "severity": "warning",
+      "severity": "error",
       "description": "Lühendite sõnastiku terminid esinevad põhitekstis",
       "message": "Lühendite ja mõistete sõnastiku terminid peavad esinema töö põhitekstis"
+    },
+    {
+      "ruleId": "abstract_length_main",
+      "type": "numeric",
+      "enabled": false,
+      "target": "document",
+      "property": "abstractPageLength",
+      "expectedValue": 0.5,
+      "unit": "page",
+      "tolerance": 0.2,
+      "severity": "warning",
+      "description": "Lühikokkuvõtte pikkus töö põhikeeles",
+      "message": "Töö põhikeeles peab lühikokkuvõtte pikkus olema pool A4 lehekülge"
     }
   ]
 }
