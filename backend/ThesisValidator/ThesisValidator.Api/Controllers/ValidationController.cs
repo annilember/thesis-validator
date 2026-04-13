@@ -59,9 +59,9 @@ public class ValidationController : ControllerBase
         {
             return BadRequest(new { error = exception.Message });
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return StatusCode(500, new { error = "Valideerimine ebaõnnestus. Palun proovi uuesti." });
+            return StatusCode(500, new { error = ex.Message, stackTrace = ex.ToString() });
         }
     }
 }
