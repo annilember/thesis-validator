@@ -65,8 +65,6 @@ public class DocxRenderingService : IDocumentRenderingService
         using var renderer = new DocIORenderer();
         using var pdfDocument = renderer.ConvertToPDF(wordDocument);
 
-        Console.WriteLine($"{pdfDocument.Pages.Count} pages counted");
-
         return pdfDocument.Pages.Count;
     }
 }

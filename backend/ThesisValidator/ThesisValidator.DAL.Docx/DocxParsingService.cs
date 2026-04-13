@@ -118,9 +118,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             {
                 fontSizes.Add(UnitConverter.HalfPointsToPt((int)halfPoints));
             }
-
-            _logger.LogDebug("FontSize - StyleId: {Style}, HalfPoints: {HalfPoints}, Pt: {Pt}", styleId, halfPoints,
-                halfPoints != null ? UnitConverter.HalfPointsToPt((int)halfPoints) : null);
         }
 
         return fontSizes;
@@ -156,8 +153,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             var isBoldFromStyle = StyleResolver.ResolveBold(document, styleId) ?? false;
 
             var isBold = isBoldFromRun || isBoldFromParagraphMark || isBoldFromStyle;
-
-            _logger.LogDebug("Paragraph style: {Style}, Bold: {Bold}", styleId, isBold);
 
             if (!isBold)
             {
@@ -197,7 +192,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
             if (alignment != null)
             {
-                _logger.LogDebug("Paragraph style: {Style}, Alignment: {Alignment}", styleId, alignment);
                 alignments.Add(alignment);
             }
         }
@@ -284,13 +278,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             .Where(t => !string.IsNullOrEmpty(t))
             .ToList();
 
-        Console.WriteLine($"All titles: {string.Join(", ", allTitles)}");
-        Console.WriteLine($"StartFromHeading: {startFromHeading}, index: {allTitles.IndexOf(startFromHeading ?? "")}");
-
-        var kasutatud = body.Descendants<Paragraph>()
-            .FirstOrDefault(p => p.InnerText.Trim() == "Kasutatud kirjandus");
-        Console.WriteLine($"Kasutatud kirjandus style: {kasutatud?.ParagraphProperties?.ParagraphStyleId?.Val?.Value}");
-
         var startIndex = startFromHeading != null
             ? allTitles.IndexOf(startFromHeading) + 1
             : 0;
@@ -318,15 +305,12 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         var elements = body.ChildElements.ToList();
         var foundHeading = false;
 
-        _logger.LogDebug("Looking for section: {Title}", sectionTitle);
-
         foreach (var element in elements)
         {
             if (element is Paragraph paragraph)
             {
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
                 var text = paragraph.InnerText.Trim();
-                _logger.LogDebug("Element: Paragraph, Style: {Style}, Text: {Text}", styleId, text);
 
                 if ((styleId == DocxStyles.HeadingUnnumbered || styleId == DocxStyles.Heading1 ||
                      styleId == DocxStyles.Heading) && text == sectionTitle)
@@ -334,10 +318,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
                     foundHeading = true;
                     continue;
                 }
-            }
-            else if (element is Table)
-            {
-                _logger.LogDebug("Element: Table");
             }
 
             if (foundHeading && element is Table table)

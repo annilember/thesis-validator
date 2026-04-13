@@ -116,12 +116,6 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
             return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Ühtegi lõiku ei leitud"));
         }
 
-        foreach (var value in actualValues)
-        {
-            _logger.LogDebug("Regex check - RuleId: {RuleId}, Text: {Text}, Pattern: {Pattern}",
-                rule.RuleId, value, rule.Pattern);
-        }
-
         return Task.FromResult(RuleEvaluator.EvaluateRegex(rule, actualValues));
     }
 
@@ -256,12 +250,6 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         var terms = _docxParsingService.GetGlossaryTerms(document, rule.SectionTitle);
         var bodyText = _docxParsingService.GetBodyText(document);
-
-        foreach (var term in terms)
-        {
-            _logger.LogDebug("Glossary term: {Term}, Found in text: {Found}", term,
-                bodyText.Contains(term, StringComparison.OrdinalIgnoreCase));
-        }
 
         return RuleEvaluator.EvaluateCrossReference(rule, terms, bodyText);
     }
