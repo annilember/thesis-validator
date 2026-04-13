@@ -16,6 +16,8 @@ public abstract class ValidationRule
 
     public List<string>? StyleFilters { get; set; }
 
+    public List<string>? FontFilters { get; set; }
+
     public ERuleSeverity Severity { get; set; }
 
     public string Description { get; set; } = string.Empty;

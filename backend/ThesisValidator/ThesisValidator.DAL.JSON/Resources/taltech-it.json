@@ -196,9 +196,7 @@
       "severity": "error",
       "description": "Programmikoodi fondi suurus",
       "message": "Programmikoodi teksti fondi suurus peab olema 10 pt",
-      "styleFilters": [
-        "Code"
-      ]
+      "fontFilters": ["Courier New", "Consolas"]
     },
     {
       "ruleId": "heading_bold",

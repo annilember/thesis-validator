@@ -17,6 +17,13 @@ public static class StyleResolver
                 ? result
                 : null);
 
+    public static string? ResolveFont(WordprocessingDocument document, string? styleId) =>
+        ResolvePropertyClass<string>(
+            document,
+            styleId,
+            s => s.StyleRunProperties?.RunFonts?.Ascii?.Value,
+            d => d.RunPropertiesDefault?.RunPropertiesBaseStyle?.RunFonts?.Ascii?.Value);
+
     public static bool? ResolveBold(WordprocessingDocument document, string? styleId) =>
         ResolveProperty(
             document,
@@ -78,7 +85,47 @@ public static class StyleResolver
         {
             var docDefaults = document.MainDocumentPart?.StyleDefinitionsPart?.Styles?.DocDefaults;
             if (docDefaults != null)
+            {
                 return docDefaultSelector(docDefaults);
+            }
+        }
+
+        return null;
+    }
+
+    private static T? ResolvePropertyClass<T>(
+        WordprocessingDocument document,
+        string? styleId,
+        Func<Style, T?> propertySelector,
+        Func<DocDefaults, T?>? docDefaultSelector = null) where T : class
+    {
+        if (styleId != null)
+        {
+            var style = GetStyle(document, styleId);
+            if (style != null)
+            {
+                var value = propertySelector(style);
+                if (value != null)
+                {
+                    return value;
+                }
+
+                var fromBase = ResolvePropertyClass(document, style.BasedOn?.Val?.Value, propertySelector,
+                    docDefaultSelector);
+                if (fromBase != null)
+                {
+                    return fromBase;
+                }
+            }
+        }
+
+        if (docDefaultSelector != null)
+        {
+            var docDefaults = document.MainDocumentPart?.StyleDefinitionsPart?.Styles?.DocDefaults;
+            if (docDefaults != null)
+            {
+                return docDefaultSelector(docDefaults);
+            }
         }
 
         return null;

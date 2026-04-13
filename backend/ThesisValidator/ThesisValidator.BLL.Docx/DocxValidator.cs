@@ -207,8 +207,10 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
     {
         return (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Paragraph, ERuleProperty.FontSize) => _docxParsingService.GetParagraphFontSizes(document,
-                rule.StyleFilters),
+            (ERuleTarget.Paragraph, ERuleProperty.FontSize) => _docxParsingService.GetParagraphFontSizes(
+                document,
+                rule.StyleFilters,
+                rule.FontFilters),
             _ => null
         };
     }

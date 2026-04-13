@@ -51,19 +51,16 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         return UnitConverter.TwipsToUnit(value.Value, unit);
     }
 
-    public List<double> GetParagraphFontSizes(WordprocessingDocument document, List<string>? styleFilters)
+    public List<double> GetParagraphFontSizes(
+        WordprocessingDocument document,
+        List<string>? styleFilters,
+        List<string>? fontFilters)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
         {
             return [];
         }
-
-        _logger.LogDebug("All styles in document: {Styles}",
-            string.Join(", ", body.Descendants<Paragraph>()
-                .Select(p => p.ParagraphProperties?.ParagraphStyleId?.Val?.Value)
-                .Distinct()
-                .Where(s => s != null)));
 
         var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
 
@@ -77,6 +74,16 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             });
         }
 
+        if (fontFilters != null && fontFilters.Count > 0)
+        {
+            paragraphs = paragraphs.Where(p =>
+            {
+                var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                var font = StyleResolver.ResolveFont(document, styleId);
+                return font != null && fontFilters.Contains(font);
+            });
+        }
+
         var fontSizes = new List<double>();
 
         foreach (var paragraph in paragraphs)
@@ -85,7 +92,27 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
             // WordprocessingML paragraphs without an explicit style inherit from Normal by default
             var effectiveStyleId = styleId ?? DocxStyles.Normal;
-            var halfPoints = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+            double? halfPoints;
+
+            if (fontFilters != null && fontFilters.Count > 0)
+            {
+                // In case of fontFilters also check fonts on run level
+                var runVal = paragraph.Descendants<Run>()
+                    .Select(r => r.RunProperties?.FontSize?.Val?.Value)
+                    .FirstOrDefault(v => v != null);
+
+                double? halfPointsFromRun = null;
+                if (runVal != null && double.TryParse(runVal, out var runResult))
+                {
+                    halfPointsFromRun = runResult;
+                }
+
+                halfPoints = halfPointsFromRun ?? StyleResolver.ResolveFontSize(document, effectiveStyleId);
+            }
+            else
+            {
+                halfPoints = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+            }
 
             if (halfPoints != null)
             {
