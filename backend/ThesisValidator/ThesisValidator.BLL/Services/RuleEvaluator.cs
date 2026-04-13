@@ -93,6 +93,35 @@ public class RuleEvaluator : IRuleEvaluator
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
     }
 
+    public ValidationIssue EvaluateLanguage(LanguageRule rule, ESupportedLanguage? detectedLanguage)
+    {
+        if (detectedLanguage == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Keelt ei õnnestunud tuvastada");
+        }
+
+        return Evaluate(rule, detectedLanguage == rule.ExpectedLanguage);
+    }
+
+    public ValidationIssue EvaluateLanguage(LanguageRule rule, List<ESupportedLanguage?> detectedLanguages)
+    {
+        var validLanguages = detectedLanguages.Where(l => l != null).ToList();
+
+        if (validLanguages.Count == 0)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Keelt ei õnnestunud tuvastada");
+        }
+
+        var allSame = validLanguages.Distinct().Count() == 1;
+
+        if (!allSame)
+        {
+            return ValidationIssue.CreateFailed(rule.RuleId, "Sektsioon sisaldab mitmes keeles teksti", rule.Severity);
+        }
+
+        return Evaluate(rule, validLanguages.First() == rule.ExpectedLanguage);
+    }
+
     private static ValidationIssue Evaluate(ValidationRule rule, bool passed)
     {
         return passed

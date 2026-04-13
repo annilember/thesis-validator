@@ -12,6 +12,8 @@ public abstract class ValidationRule
 
     public ERuleTarget Target { get; set; }
 
+    public string? SectionTitle { get; set; }
+
     public List<string>? StyleFilters { get; set; }
 
     public ERuleSeverity Severity { get; set; }

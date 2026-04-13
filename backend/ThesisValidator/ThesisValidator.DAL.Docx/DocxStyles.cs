@@ -8,4 +8,9 @@ public static class DocxStyles
     public const string Heading3 = "Heading3";
     public const string HeadingUnnumbered = "Heading_unnumber";
     public const string Normal = "Normal";
+
+    public static readonly IReadOnlyList<string> AllHeadings =
+    [
+        Heading, Heading1, Heading2, Heading3, HeadingUnnumbered
+    ];
 }

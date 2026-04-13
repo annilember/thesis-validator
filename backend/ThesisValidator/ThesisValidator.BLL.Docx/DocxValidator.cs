@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
 using ThesisValidator.BLL.Services;
-using ThesisValidator.DAL;
+using ThesisValidator.DAL.Interfaces;
 using ThesisValidator.Domain;
 using ThesisValidator.Domain.Enums;
 using ThesisValidator.Domain.Rules;
@@ -13,14 +13,17 @@ namespace ThesisValidator.BLL.Docx;
 public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 {
     private readonly IDocumentParsingService<WordprocessingDocument> _docxParsingService;
+    private readonly ILanguageDetectionService _languageDetectionService;
     private readonly ILogger<DocxValidator> _logger;
 
     public DocxValidator(
         IRuleEvaluator ruleEvaluator,
         IDocumentParsingService<WordprocessingDocument> docxParsingService,
+        ILanguageDetectionService languageDetectionService,
         ILogger<DocxValidator> logger) : base(ruleEvaluator)
     {
         _docxParsingService = docxParsingService;
+        _languageDetectionService = languageDetectionService;
         _logger = logger;
     }
 
@@ -41,14 +44,14 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         if (actualValue == null && actualValues == null)
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Väärtust ei leitud dokumendist");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
         if (actualValues != null)
         {
             if (actualValues.Count == 0)
             {
-                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Ühtegi lõiku ei leitud");
+                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Ühtegi lõiku ei leitud");
             }
 
             return RuleEvaluator.EvaluateNumeric(rule, actualValues);
@@ -64,7 +67,7 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         if (actualValue == null)
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Väärtust ei leitud dokumendist");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
         return RuleEvaluator.EvaluateBoolean(rule, actualValue.Value);
@@ -76,7 +79,8 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         if (actualValues == null)
         {
-            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Väärtust ei leitud dokumendist"));
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,
+                "Väärtust ei leitud dokumendist"));
         }
 
         return Task.FromResult(RuleEvaluator.EvaluateEnum(rule, actualValues));
@@ -88,7 +92,7 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         if (actualValues.Count == 0)
         {
-            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Ühtegi lõiku ei leitud"));
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Ühtegi lõiku ei leitud"));
         }
 
         foreach (var value in actualValues)
@@ -111,7 +115,8 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         if (actualCount == null)
         {
-            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Väärtust ei leitud dokumendist"));
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,
+                "Väärtust ei leitud dokumendist"));
         }
 
         return Task.FromResult(RuleEvaluator.EvaluateCount(rule, actualCount.Value));
@@ -127,7 +132,8 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
         if (actualOrder == null)
         {
-            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Väärtust ei leitud dokumendist"));
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,
+                "Väärtust ei leitud dokumendist"));
         }
 
         return Task.FromResult(RuleEvaluator.EvaluateOrder(rule, actualOrder));
@@ -139,10 +145,27 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         var result = (rule.Target, rule.ReferenceTarget) switch
         {
             (ERuleTarget.Document, EReferenceTarget.BodyText) => EvaluateGlossaryTermsInText(document, rule),
-            _ => ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Reegli kontrollmehhanism on puudu")
+            _ => ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli kontrollmehhanism on puudu")
         };
 
         return Task.FromResult(result);
+    }
+
+    protected override Task<ValidationIssue> ValidateLanguageRuleAsync(WordprocessingDocument document, LanguageRule rule)
+    {
+        if (string.IsNullOrEmpty(rule.SectionTitle))
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Sektsiooni pealkiri puudub"));
+
+        var paragraphs = _docxParsingService.GetSectionParagraphs(document, rule.SectionTitle);
+
+        if (paragraphs.Count == 0)
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Sektsiooni teksti ei leitud"));
+
+        var detectedLanguages = paragraphs
+            .Select(p => _languageDetectionService.DetectLanguage(p))
+            .ToList();
+
+        return Task.FromResult(RuleEvaluator.EvaluateLanguage(rule, detectedLanguages));
     }
 
     private double? GetNumericValue(WordprocessingDocument document, NumericRule rule)
@@ -195,7 +218,7 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
     {
         if (string.IsNullOrEmpty(rule.SectionTitle))
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Sektsiooni pealkiri puudub");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Sektsiooni pealkiri puudub");
         }
 
         var terms = _docxParsingService.GetGlossaryTerms(document, rule.SectionTitle);

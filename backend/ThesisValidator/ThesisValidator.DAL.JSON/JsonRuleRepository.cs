@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ThesisValidator.DAL.Interfaces;
 using ThesisValidator.Domain;
 using ThesisValidator.Domain.Rules;
 
@@ -56,6 +57,7 @@ public class JsonRuleRepository : IRuleRepository
                 "count" => JsonSerializer.Deserialize<CountRule>(ruleJson, _jsonOptions),
                 "order" => JsonSerializer.Deserialize<OrderRule>(ruleJson, _jsonOptions),
                 "crossreference" => JsonSerializer.Deserialize<CrossReferenceRule>(ruleJson, _jsonOptions),
+                "language" => JsonSerializer.Deserialize<LanguageRule>(ruleJson, _jsonOptions),
                 _ => null
             };
 

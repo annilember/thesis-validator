@@ -1,6 +1,7 @@
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
 using ThesisValidator.DAL;
+using ThesisValidator.DAL.Interfaces;
 using ThesisValidator.Domain.Enums;
 
 namespace ThesisValidator.BLL.Services;

@@ -4,9 +4,10 @@ using ThesisValidator.Api.Configuration;
 using ThesisValidator.BLL.Docx;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Services;
-using ThesisValidator.DAL;
 using ThesisValidator.DAL.Docx;
+using ThesisValidator.DAL.Interfaces;
 using ThesisValidator.DAL.JSON;
+using ThesisValidator.DAL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,7 @@ builder.Services.AddSwaggerGen();
 // DAL
 builder.Services.AddScoped<IDocumentParsingService<WordprocessingDocument>, DocxParsingService>();
 builder.Services.AddScoped<IRuleRepository, JsonRuleRepository>();
+builder.Services.AddSingleton<ILanguageDetectionService, LanguageDetectionService>();
 
 // BLL
 builder.Services.AddScoped<IRuleEvaluator, RuleEvaluator>();

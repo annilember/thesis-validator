@@ -5,6 +5,4 @@ namespace ThesisValidator.Domain.Rules;
 public class CrossReferenceRule : ValidationRule
 {
     public EReferenceTarget ReferenceTarget { get; set; }
-
-    public string? SectionTitle { get; set; }
 }

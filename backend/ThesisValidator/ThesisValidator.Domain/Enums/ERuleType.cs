@@ -8,5 +8,6 @@ public enum ERuleType
     Regex,
     Count,
     Order,
-    CrossReference
+    CrossReference,
+    Language
 }

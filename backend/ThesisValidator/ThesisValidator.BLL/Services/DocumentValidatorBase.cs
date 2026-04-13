@@ -47,6 +47,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
             CountRule count => ValidateCountRuleAsync(document, count),
             OrderRule order => ValidateOrderRuleAsync(document, order),
             CrossReferenceRule crossRef => ValidateCrossReferenceRuleAsync(document, crossRef),
+            LanguageRule language => ValidateLanguageRuleAsync(document, language),
             _ => Task.FromResult(ValidationIssue.CreateSkipped(
                 rule.RuleId,
                 rule.Message,
@@ -60,7 +61,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
     protected abstract Task<ValidationIssue> ValidateRegexRuleAsync(TDocument document, RegexRule rule);
     protected abstract Task<ValidationIssue> ValidateCountRuleAsync(TDocument document, CountRule rule);
     protected abstract Task<ValidationIssue> ValidateOrderRuleAsync(TDocument document, OrderRule rule);
-
     protected abstract Task<ValidationIssue> ValidateCrossReferenceRuleAsync(TDocument document,
         CrossReferenceRule rule);
+    protected abstract Task<ValidationIssue> ValidateLanguageRuleAsync(TDocument document, LanguageRule rule);
 }

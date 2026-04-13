@@ -264,11 +264,24 @@
       "message": "Lühendite ja mõistete sõnastiku terminid peavad esinema töö põhitekstis"
     },
     {
+      "ruleId": "abstract_language_main",
+      "type": "language",
+      "enabled": true,
+      "target": "section",
+      "sectionTitle": "Lühikokkuvõte",
+      "expectedLanguage": "et",
+      "language": "et",
+      "severity": "error",
+      "description": "Peamine lühikokkuvõte on eesti keeles",
+      "message": "Töö põhikeeles kirjutatud lühikokkuvõte peab olema eesti keeles"
+    },
+    {
       "ruleId": "abstract_length_main",
       "type": "numeric",
       "enabled": false,
-      "target": "document",
+      "target": "section",
       "property": "abstractPageLength",
+      "sectionTitle": "Lühikokkuvõte",
       "expectedValue": 0.5,
       "unit": "page",
       "tolerance": 0.2,

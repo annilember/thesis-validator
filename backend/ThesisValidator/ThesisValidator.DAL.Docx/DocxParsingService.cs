@@ -2,6 +2,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using ThesisValidator.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using ThesisValidator.DAL.Interfaces;
 
 namespace ThesisValidator.DAL.Docx;
 
@@ -82,6 +83,7 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         {
             var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
+            // WordprocessingML paragraphs without an explicit style inherit from Normal by default
             var effectiveStyleId = styleId ?? DocxStyles.Normal;
             var halfPoints = StyleResolver.ResolveFontSize(document, effectiveStyleId);
 
@@ -90,7 +92,8 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
                 fontSizes.Add(UnitConverter.HalfPointsToPt((int)halfPoints));
             }
 
-            _logger.LogDebug("FontSize - StyleId: {Style}, HalfPoints: {HalfPoints}, Pt: {Pt}", styleId, halfPoints, halfPoints != null ? UnitConverter.HalfPointsToPt((int)halfPoints) : null);
+            _logger.LogDebug("FontSize - StyleId: {Style}, HalfPoints: {HalfPoints}, Pt: {Pt}", styleId, halfPoints,
+                halfPoints != null ? UnitConverter.HalfPointsToPt((int)halfPoints) : null);
         }
 
         return fontSizes;
@@ -313,5 +316,45 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
                 return styleId == DocxStyles.Normal || styleId == null;
             })
             .Select(p => p.InnerText));
+    }
+
+    public List<string> GetSectionParagraphs(WordprocessingDocument document, string sectionTitle)
+    {
+        var body = document.MainDocumentPart?.Document?.Body;
+        if (body == null)
+        {
+            return [];
+        }
+
+        var elements = body.ChildElements.ToList();
+        var foundHeading = false;
+        var paragraphs = new List<string>();
+
+        foreach (var element in elements)
+        {
+            if (element is Paragraph paragraph)
+            {
+                var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                var text = paragraph.InnerText.Trim();
+
+                if (DocxStyles.AllHeadings.Contains(styleId) && text == sectionTitle)
+                {
+                    foundHeading = true;
+                    continue;
+                }
+
+                if (foundHeading && DocxStyles.AllHeadings.Contains(styleId))
+                {
+                    break;
+                }
+
+                if (foundHeading && !string.IsNullOrEmpty(text))
+                {
+                    paragraphs.Add(text);
+                }
+            }
+        }
+
+        return paragraphs;
     }
 }

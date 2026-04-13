@@ -1,6 +1,6 @@
 using ThesisValidator.Domain;
 
-namespace ThesisValidator.DAL;
+namespace ThesisValidator.DAL.Interfaces;
 
 public interface IRuleRepository
 {
