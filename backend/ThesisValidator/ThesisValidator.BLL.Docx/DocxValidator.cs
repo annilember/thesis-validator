@@ -14,16 +14,19 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 {
     private readonly IDocumentParsingService<WordprocessingDocument> _docxParsingService;
     private readonly ILanguageDetectionService _languageDetectionService;
+    private readonly IDocumentRenderingService _renderingService;
     private readonly ILogger<DocxValidator> _logger;
 
     public DocxValidator(
         IRuleEvaluator ruleEvaluator,
         IDocumentParsingService<WordprocessingDocument> docxParsingService,
         ILanguageDetectionService languageDetectionService,
+        IDocumentRenderingService renderingService,
         ILogger<DocxValidator> logger) : base(ruleEvaluator)
     {
         _docxParsingService = docxParsingService;
         _languageDetectionService = languageDetectionService;
+        _renderingService = renderingService;
         _logger = logger;
     }
 
@@ -32,8 +35,14 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
     public override async Task<ValidationResult> ValidateAsync(Stream document, IEnumerable<ValidationRule> rules)
     {
-        using var wordDocument = WordprocessingDocument.Open(document, false);
-        return await ValidateRulesAsync(wordDocument, rules);
+        using var memoryStream = new MemoryStream();
+        await document.CopyToAsync(memoryStream);
+
+        memoryStream.Position = 0;
+        using var wordDocument = WordprocessingDocument.Open(memoryStream, false);
+
+        memoryStream.Position = 0;
+        return await ValidateRulesAsync(wordDocument, memoryStream, rules);
     }
 
     protected override async Task<ValidationIssue> ValidateNumericRuleAsync(WordprocessingDocument document,
@@ -104,12 +113,17 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         return Task.FromResult(RuleEvaluator.EvaluateRegex(rule, actualValues));
     }
 
-    protected override Task<ValidationIssue> ValidateCountRuleAsync(WordprocessingDocument document, CountRule rule)
+    protected override Task<ValidationIssue> ValidateCountRuleAsync(
+        WordprocessingDocument document,
+        Stream rawStream,
+        CountRule rule)
     {
         var actualCount = (rule.Target, rule.Property) switch
         {
             (ERuleTarget.Section, ERuleProperty.ParagraphCount) =>
                 _docxParsingService.GetMinParagraphCountInSubsection(document),
+            (ERuleTarget.Document, ERuleProperty.PageCount) =>
+                _renderingService.GetMainContentPageCount(rawStream, "Sissejuhatus", "Kokkuvõte"),
             _ => (int?)null
         };
 
@@ -151,15 +165,20 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         return Task.FromResult(result);
     }
 
-    protected override Task<ValidationIssue> ValidateLanguageRuleAsync(WordprocessingDocument document, LanguageRule rule)
+    protected override Task<ValidationIssue> ValidateLanguageRuleAsync(WordprocessingDocument document,
+        LanguageRule rule)
     {
         if (string.IsNullOrEmpty(rule.SectionTitle))
-            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Sektsiooni pealkiri puudub"));
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,
+                "Sektsiooni pealkiri puudub"));
 
         var paragraphs = _docxParsingService.GetSectionParagraphs(document, rule.SectionTitle);
 
         if (paragraphs.Count == 0)
-            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Sektsiooni teksti ei leitud"));
+        {
+            return Task.FromResult(ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,
+                "Sektsiooni teksti ei leitud"));
+        }
 
         var detectedLanguages = paragraphs
             .Select(p => _languageDetectionService.DetectLanguage(p))

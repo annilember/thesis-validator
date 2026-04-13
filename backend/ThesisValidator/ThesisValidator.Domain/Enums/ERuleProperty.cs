@@ -15,6 +15,7 @@ public enum ERuleProperty
     ParagraphCount,
     FontSize,
     LineSpacing,
+    PageCount,
     SpaceBefore,
     SpaceAfter,
     Text

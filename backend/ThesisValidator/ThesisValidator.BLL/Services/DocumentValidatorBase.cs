@@ -20,15 +20,18 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
         Stream document,
         IEnumerable<ValidationRule> rules);
 
-    protected async Task<ValidationResult> ValidateRulesAsync(TDocument document, IEnumerable<ValidationRule> rules)
+    protected async Task<ValidationResult> ValidateRulesAsync(
+        TDocument document,
+        Stream rawStream,
+        IEnumerable<ValidationRule> rules)
     {
         var issues = new List<ValidationIssue>();
 
         foreach (var rule in rules)
         {
             var issue = rule.Enabled
-                ? await ValidateRuleAsync(document, rule)
-                : ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Reegel pole sisse lülitatud");
+                ? await ValidateRuleAsync(document, rawStream, rule)
+                : ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegel pole sisse lülitatud");
 
             issues.Add(issue);
         }
@@ -36,7 +39,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
         return new ValidationResult { Issues = issues };
     }
 
-    protected Task<ValidationIssue> ValidateRuleAsync(TDocument document, ValidationRule rule)
+    protected Task<ValidationIssue> ValidateRuleAsync(TDocument document, Stream rawStream, ValidationRule rule)
     {
         return rule switch
         {
@@ -44,7 +47,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
             BooleanRule boolean => ValidateBooleanRuleAsync(document, boolean),
             EnumRule enumRule => ValidateEnumRuleAsync(document, enumRule),
             RegexRule regex => ValidateRegexRuleAsync(document, regex),
-            CountRule count => ValidateCountRuleAsync(document, count),
+            CountRule count => ValidateCountRuleAsync(document, rawStream, count),
             OrderRule order => ValidateOrderRuleAsync(document, order),
             CrossReferenceRule crossRef => ValidateCrossReferenceRuleAsync(document, crossRef),
             LanguageRule language => ValidateLanguageRuleAsync(document, language),
@@ -59,9 +62,15 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
     protected abstract Task<ValidationIssue> ValidateBooleanRuleAsync(TDocument document, BooleanRule rule);
     protected abstract Task<ValidationIssue> ValidateEnumRuleAsync(TDocument document, EnumRule rule);
     protected abstract Task<ValidationIssue> ValidateRegexRuleAsync(TDocument document, RegexRule rule);
-    protected abstract Task<ValidationIssue> ValidateCountRuleAsync(TDocument document, CountRule rule);
+
+    protected abstract Task<ValidationIssue> ValidateCountRuleAsync(TDocument document,
+        Stream rawStream,
+        CountRule rule);
+
     protected abstract Task<ValidationIssue> ValidateOrderRuleAsync(TDocument document, OrderRule rule);
+
     protected abstract Task<ValidationIssue> ValidateCrossReferenceRuleAsync(TDocument document,
         CrossReferenceRule rule);
+
     protected abstract Task<ValidationIssue> ValidateLanguageRuleAsync(TDocument document, LanguageRule rule);
 }

@@ -26,9 +26,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // DAL
-builder.Services.AddScoped<IDocumentParsingService<WordprocessingDocument>, DocxParsingService>();
 builder.Services.AddScoped<IRuleRepository, JsonRuleRepository>();
+builder.Services.AddScoped<IDocumentParsingService<WordprocessingDocument>, DocxParsingService>();
 builder.Services.AddSingleton<ILanguageDetectionService, LanguageDetectionService>();
+builder.Services.AddScoped<IDocumentRenderingService, DocxRenderingService>();
 
 // BLL
 builder.Services.AddScoped<IRuleEvaluator, RuleEvaluator>();

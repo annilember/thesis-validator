@@ -80,7 +80,9 @@
       "severity": "error",
       "description": "Põhiteksti fondi suurus",
       "message": "Põhiteksti fondi suurus peab olema 12 pt",
-      "styleFilters": ["Normal"]
+      "styleFilters": [
+        "Normal"
+      ]
     },
     {
       "ruleId": "font_size_heading1",
@@ -94,7 +96,12 @@
       "severity": "error",
       "description": "I taseme peakirja fondi suurus",
       "message": "I taseme peakirja fondi suurus peab olema 16 pt",
-      "styleFilters": ["Heading1", "Heading", "Heading_unnumber", "TOC1"]
+      "styleFilters": [
+        "Heading1",
+        "Heading",
+        "Heading_unnumber",
+        "TOC1"
+      ]
     },
     {
       "ruleId": "font_size_heading2",
@@ -108,7 +115,9 @@
       "severity": "error",
       "description": "II taseme peakirja fondi suurus",
       "message": "II taseme peakirja fondi suurus peab olema 14 pt",
-      "styleFilters": ["Heading2"]
+      "styleFilters": [
+        "Heading2"
+      ]
     },
     {
       "ruleId": "font_size_heading3",
@@ -122,7 +131,9 @@
       "severity": "error",
       "description": "III taseme peakirja fondi suurus",
       "message": "III taseme peakirja fondi suurus peab olema 12 pt",
-      "styleFilters": ["Heading3"]
+      "styleFilters": [
+        "Heading3"
+      ]
     },
     {
       "ruleId": "font_size_toc",
@@ -136,7 +147,10 @@
       "severity": "error",
       "description": "Sisukorra teksti fondi suurus",
       "message": "Sisukorra teksti fondi suurus peab olema 12 pt",
-      "styleFilters": ["TOC2", "TOC3"]
+      "styleFilters": [
+        "TOC2",
+        "TOC3"
+      ]
     },
     {
       "ruleId": "font_size_caption",
@@ -150,7 +164,9 @@
       "severity": "error",
       "description": "Tabeli või joonise pealkirja fondi suurus",
       "message": "Tabeli või joonise pealkirja fondi suurus peab olema 10 pt",
-      "styleFilters": ["Caption"]
+      "styleFilters": [
+        "Caption"
+      ]
     },
     {
       "ruleId": "font_size_table",
@@ -164,12 +180,14 @@
       "severity": "error",
       "description": "Tabeli teksti fondi suurus",
       "message": "Tabeli sees oleva teksti fondi suurus peab olema 11 pt",
-      "styleFilters": ["Tabletext"]
+      "styleFilters": [
+        "Tabletext"
+      ]
     },
     {
       "ruleId": "font_size_code",
       "type": "numeric",
-      "enabled": false,
+      "enabled": true,
       "target": "paragraph",
       "property": "fontSize",
       "expectedValue": 10.0,
@@ -178,7 +196,9 @@
       "severity": "error",
       "description": "Programmikoodi fondi suurus",
       "message": "Programmikoodi teksti fondi suurus peab olema 10 pt",
-      "styleFilters": ["Code"]
+      "styleFilters": [
+        "Code"
+      ]
     },
     {
       "ruleId": "heading_bold",
@@ -276,18 +296,30 @@
       "message": "Töö põhikeeles kirjutatud lühikokkuvõte peab olema eesti keeles"
     },
     {
-      "ruleId": "abstract_length_main",
-      "type": "numeric",
-      "enabled": false,
-      "target": "section",
-      "property": "abstractPageLength",
-      "sectionTitle": "Lühikokkuvõte",
-      "expectedValue": 0.5,
-      "unit": "page",
-      "tolerance": 0.2,
+      "ruleId": "main_content_page_count_bachelor",
+      "type": "count",
+      "enabled": true,
+      "target": "document",
+      "property": "pageCount",
+      "thesisType": "bachelor",
+      "minValue": 25,
+      "maxValue": 35,
       "severity": "warning",
-      "description": "Lühikokkuvõtte pikkus töö põhikeeles",
-      "message": "Töö põhikeeles peab lühikokkuvõtte pikkus olema pool A4 lehekülge"
+      "description": "Bakalaureusetöö põhiosa maht",
+      "message": "Bakalaureusetöö põhiosa peab üldjuhul olema 25-35 lehekülge"
+    },
+    {
+      "ruleId": "main_content_page_count_master",
+      "type": "count",
+      "enabled": true,
+      "target": "document",
+      "property": "pageCount",
+      "thesisType": "master",
+      "minValue": 30,
+      "maxValue": 60,
+      "severity": "warning",
+      "description": "Magistritöö põhiosa maht",
+      "message": "Magistritöö põhiosa peab üldjuhul olema 40-60 lehekülge"
     }
   ]
 }
