@@ -59,10 +59,9 @@ public class ValidationController : ControllerBase
         {
             return BadRequest(new { error = exception.Message });
         }
-        // TODO: uncomment.
-        // catch (Exception)
-        // {
-        //     return StatusCode(500, new { error = "Valideerimine ebaõnnestus. Palun proovi uuesti." });
-        // }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Valideerimine ebaõnnestus. Palun proovi uuesti." });
+        }
     }
 }
