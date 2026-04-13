@@ -229,20 +229,6 @@
       ]
     },
     {
-      "ruleId": "heading_numbering_format",
-      "type": "regex",
-      "enabled": false,
-      "target": "paragraph",
-      "property": "text",
-      "pattern": "^\\d+\\s",
-      "severity": "error",
-      "description": "I taseme peakirja nummerduse formaat",
-      "message": "I taseme peakirja number peab olema kujul '1 Pealkiri'",
-      "styleFilters": [
-        "Heading1"
-      ]
-    },
-    {
       "ruleId": "subsection_min_paragraphs",
       "type": "count",
       "enabled": true,
@@ -318,6 +304,18 @@
       "severity": "warning",
       "description": "Magistritöö põhiosa maht",
       "message": "Magistritöö põhiosa peab üldjuhul olema 40-60 lehekülge"
+    },
+    {
+      "ruleId": "appendix_title_format",
+      "type": "regex",
+      "enabled": true,
+      "target": "paragraph",
+      "property": "text",
+      "pattern": "^Lisa \\d+ \u2013 .+",
+      "afterSectionTitle": "Kasutatud kirjandus",
+      "severity": "error",
+      "description": "Lisa pealkirja formaat",
+      "message": "Lisa pealkiri peab algama kujul 'Lisa 1 – Pealkiri'"
     }
   ]
 }

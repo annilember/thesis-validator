@@ -14,6 +14,10 @@ public abstract class ValidationRule
 
     public string? SectionTitle { get; set; }
 
+    public string? AfterSectionTitle { get; set; }
+
+    public string? BeforeSectionTitle { get; set; }
+
     public List<string>? StyleFilters { get; set; }
 
     public List<string>? FontFilters { get; set; }

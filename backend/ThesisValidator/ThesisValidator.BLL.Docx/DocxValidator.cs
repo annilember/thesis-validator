@@ -97,7 +97,19 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 
     protected override Task<ValidationIssue> ValidateRegexRuleAsync(WordprocessingDocument document, RegexRule rule)
     {
-        var actualValues = _docxParsingService.GetParagraphTexts(document, rule.StyleFilters);
+        List<string> actualValues;
+
+        if (rule.AfterSectionTitle != null || rule.BeforeSectionTitle != null)
+        {
+            actualValues = _docxParsingService.GetSectionTitles(
+                document,
+                startFromHeading: rule.AfterSectionTitle,
+                endWithHeading: rule.BeforeSectionTitle);
+        }
+        else
+        {
+            actualValues = _docxParsingService.GetParagraphTexts(document, rule.StyleFilters);
+        }
 
         if (actualValues.Count == 0)
         {

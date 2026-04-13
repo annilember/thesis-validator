@@ -266,7 +266,10 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         return minCount == int.MaxValue ? 0 : minCount;
     }
 
-    public List<string> GetSectionTitles(WordprocessingDocument document)
+    public List<string> GetSectionTitles(
+        WordprocessingDocument document,
+        string? startFromHeading = null,
+        string? endWithHeading = null)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
@@ -274,25 +277,46 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return [];
         }
 
-        return body.Descendants<Paragraph>()
-            .Where(p =>
-            {
-                var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                return styleId == DocxStyles.Heading1 || styleId == DocxStyles.HeadingUnnumbered;
-            })
+        var allTitles = body.Descendants<Paragraph>()
+            .Where(p => DocxStyles.Level1Headings.Contains(
+                p.ParagraphProperties?.ParagraphStyleId?.Val?.Value))
             .Select(p => p.InnerText.Trim())
             .Where(t => !string.IsNullOrEmpty(t))
             .ToList();
+
+        Console.WriteLine($"All titles: {string.Join(", ", allTitles)}");
+        Console.WriteLine($"StartFromHeading: {startFromHeading}, index: {allTitles.IndexOf(startFromHeading ?? "")}");
+
+        var kasutatud = body.Descendants<Paragraph>()
+            .FirstOrDefault(p => p.InnerText.Trim() == "Kasutatud kirjandus");
+        Console.WriteLine($"Kasutatud kirjandus style: {kasutatud?.ParagraphProperties?.ParagraphStyleId?.Val?.Value}");
+
+        var startIndex = startFromHeading != null
+            ? allTitles.IndexOf(startFromHeading) + 1
+            : 0;
+
+        var endIndex = endWithHeading != null
+            ? allTitles.IndexOf(endWithHeading)
+            : allTitles.Count;
+
+        if (startIndex < 0 || endIndex < 0 || startIndex > endIndex)
+        {
+            return [];
+        }
+
+        return allTitles.Skip(startIndex).Take(endIndex - startIndex).ToList();
     }
 
     public List<string> GetGlossaryTerms(WordprocessingDocument document, string sectionTitle)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
+        {
             return [];
+        }
 
         var elements = body.ChildElements.ToList();
-        bool foundHeading = false;
+        var foundHeading = false;
 
         _logger.LogDebug("Looking for section: {Title}", sectionTitle);
 

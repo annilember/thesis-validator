@@ -8,20 +8,21 @@ public static class DocxStyles
     public const string Heading2 = "Heading2";
     public const string Heading3 = "Heading3";
     public const string HeadingUnnumbered = "Heading_unnumber";
+    public const string HeadingUnnumbered2 = "Headingunnumber";
     public const string Normal = "Normal";
 
     public static readonly IReadOnlyList<string> AllHeadings =
     [
-        Heading, Heading1, Heading2, Heading3, HeadingUnnumbered
+        Heading, Heading1, Heading2, Heading3, HeadingUnnumbered, HeadingUnnumbered2
     ];
 
     public static readonly IReadOnlyList<string> Level1Headings =
     [
-        Heading, Heading1, HeadingUnnumbered
+        Heading, Heading1, HeadingUnnumbered, HeadingUnnumbered2
     ];
 
     public static readonly IReadOnlyList<string> Level1HeadingsSyncfusion =
     [
-        Heading, Heading1, HeadingUnnumbered, Heading1SyncFusion
+        Heading, Heading1, HeadingUnnumbered, HeadingUnnumbered2, Heading1SyncFusion
     ];
 }
