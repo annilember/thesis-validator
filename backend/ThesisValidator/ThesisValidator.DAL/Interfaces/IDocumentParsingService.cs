@@ -4,11 +4,11 @@ namespace ThesisValidator.DAL.Interfaces;
 
 public interface IDocumentParsingService<in TDocument>
 {
-    double? GetPageMarginTop(TDocument document, EUnit unit);
-    double? GetPageMarginBottom(TDocument document, EUnit unit);
-    double? GetPageMarginLeft(TDocument document, EUnit ruleUnit);
-    double? GetPageMarginRight(TDocument document, EUnit unit);
-    double? GetPageMarginFooter(TDocument document, EUnit unit);
+    List<double> GetPageMarginTop(TDocument document, EUnit unit);
+    List<double> GetPageMarginBottom(TDocument document, EUnit unit);
+    List<double> GetPageMarginLeft(TDocument document, EUnit ruleUnit);
+    List<double> GetPageMarginRight(TDocument document, EUnit unit);
+    List<double> GetPageMarginFooter(TDocument document, EUnit unit);
     List<double> GetParagraphFontSizes(TDocument document, List<string>? styleFilters, List<string>? fontFilters);
     bool? GetParagraphBold(TDocument document, List<string>? styleFilters);
     List<string> GetParagraphAlignments(TDocument document, List<string>? styleFilters);

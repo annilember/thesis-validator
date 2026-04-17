@@ -9,17 +9,28 @@ namespace ThesisValidator.BLL.Services;
 
 public class RuleEvaluator : IRuleEvaluator
 {
-    public ValidationIssue EvaluateNumeric(NumericRule rule, double actualValue)
+    public ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues)
     {
-        var difference = Math.Abs(actualValue - rule.ExpectedValue);
+        if (actualValues == null || actualValues.Count == 0)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Ühtegi väärtust ei leitud");
+        }
 
-        return Evaluate(rule, difference <= rule.Tolerance);
-    }
+        var failedValues = actualValues
+            .Where(v => Math.Abs(v - rule.ExpectedValue) > rule.Tolerance)
+            .Distinct()
+            .ToList();
 
-    public ValidationIssue EvaluateNumeric(NumericRule rule, List<double> actualValues)
-    {
-        var allMatch = actualValues.All(v => Math.Abs(v - rule.ExpectedValue) <= rule.Tolerance);
-        return Evaluate(rule, allMatch);
+        if (failedValues.Count == 0)
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        var unit = rule.Unit.ToString().ToLower();
+        var failedStr = string.Join(", ", failedValues.Select(v => $"{v:F2}{unit}"));
+        var details = $"Leitud {failedValues.Count} erinevat viga: {failedStr}, oodatav: {rule.ExpectedValue}{unit}";
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }
 
     public ValidationIssue EvaluateBoolean(BooleanRule rule, bool actualValue)
@@ -54,7 +65,7 @@ public class RuleEvaluator : IRuleEvaluator
         {
             if (rule.ExpectedOrder == null)
             {
-                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Oodatav järjekord puudub");
+                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Oodatav järjekord puudub");
             }
 
             var expectedInActual = rule.ExpectedOrder
@@ -73,14 +84,14 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
         }
 
-        return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Reegli tüüp pole toetatud");
+        return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli tüüp pole toetatud");
     }
 
     public ValidationIssue EvaluateCrossReference(CrossReferenceRule rule, List<string> terms, string bodyText)
     {
         if (terms.Count == 0)
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message,"Lühendite sõnastik on tühi");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Lühendite sõnastik on tühi");
         }
 
         var allFound = terms.All(term => bodyText.Contains(term, StringComparison.OrdinalIgnoreCase));

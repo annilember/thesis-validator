@@ -3,5 +3,6 @@ export interface IValidationIssue {
   passed: boolean
   skipped: boolean
   message: string
+  details?: string
   severity: string | null
 }

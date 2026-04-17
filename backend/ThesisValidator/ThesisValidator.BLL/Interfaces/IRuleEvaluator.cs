@@ -6,8 +6,7 @@ namespace ThesisValidator.BLL.Interfaces;
 
 public interface IRuleEvaluator
 {
-    ValidationIssue EvaluateNumeric(NumericRule rule, double actualValue);
-    ValidationIssue EvaluateNumeric(NumericRule rule, List<double> actualValues);
+    ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues);
 
     ValidationIssue EvaluateBoolean(BooleanRule rule, bool actualValue);
 

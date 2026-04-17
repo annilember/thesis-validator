@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { IValidationResponse } from '@/types/IValidationResponse'
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
   result: IValidationResponse
@@ -21,6 +21,24 @@ const filteredIssues = computed(() => {
     default: return props.result.issues
   }
 })
+
+const expandedIssues = ref(new Set<string>())
+
+watch(activeFilter, (newFilter) => {
+  expandedIssues.value = new Set(
+    filteredIssues.value
+      .filter(i => i.details && (newFilter === 'failed' || newFilter === 'skipped'))
+      .map(i => i.ruleId)
+  )
+})
+
+const toggleDetails = (ruleId: string) => {
+  if (expandedIssues.value.has(ruleId)) {
+    expandedIssues.value.delete(ruleId)
+  } else {
+    expandedIssues.value.add(ruleId)
+  }
+}
 </script>
 
 <template>
@@ -56,18 +74,18 @@ const filteredIssues = computed(() => {
     </div>
 
     <!-- Tulemuste loend -->
-    <div class="space-y-2 max-h-96 overflow-y-auto pr-1">
-      <div v-for="issue in filteredIssues" :key="issue.ruleId" class="flex items-start gap-3 p-4 rounded-lg border"
-        :class="{
-          'bg-green-50 border-green-200': issue.passed,
-          'bg-red-50 border-red-200': !issue.passed && !issue.skipped && issue.severity === 'Error',
-          'bg-yellow-50 border-yellow-200': !issue.passed && !issue.skipped && issue.severity === 'Warning',
-          'bg-gray-50 border-gray-200': issue.skipped
-        }">
+    <div v-for="issue in filteredIssues" :key="issue.ruleId" class="rounded-lg border" :class="{
+      'bg-green-50 border-green-200': issue.passed,
+      'bg-red-50 border-red-200': !issue.passed && !issue.skipped && issue.severity === 'Error',
+      'bg-yellow-50 border-yellow-200': !issue.passed && !issue.skipped && issue.severity === 'Warning',
+      'bg-gray-50 border-gray-200': issue.skipped
+    }">
+      <div class="flex items-center gap-3 p-4" :class="issue.details ? 'cursor-pointer' : ''"
+        @click="issue.details && toggleDetails(issue.ruleId)">
         <span class="text-lg shrink-0">
           {{ issue.passed ? '✓' : issue.skipped ? '–' : '✗' }}
         </span>
-        <div>
+        <div class="flex-1">
           <div class="flex items-center gap-2">
             <p class="text-sm font-medium text-gray-900">{{ issue.message }}</p>
             <span v-if="!issue.passed && !issue.skipped && issue.severity === 'Warning'"
@@ -76,6 +94,12 @@ const filteredIssues = computed(() => {
             </span>
           </div>
         </div>
+        <span v-if="issue.details" class="text-gray-900 text-sm shrink-0 cursor-pointer">
+          {{ expandedIssues.has(issue.ruleId) ? '▲' : '▼' }}
+        </span>
+      </div>
+      <div v-if="issue.details && expandedIssues.has(issue.ruleId)" class="pl-10 pb-4 text-sm italic text-red-600">
+        {{ issue.details }}
       </div>
     </div>
   </div>

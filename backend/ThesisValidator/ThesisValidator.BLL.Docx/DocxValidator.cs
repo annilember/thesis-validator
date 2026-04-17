@@ -48,25 +48,9 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
     protected override async Task<ValidationIssue> ValidateNumericRuleAsync(WordprocessingDocument document,
         NumericRule rule)
     {
-        var actualValue = GetNumericValue(document, rule);
         var actualValues = GetNumericValues(document, rule);
 
-        if (actualValue == null && actualValues == null)
-        {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
-        }
-
-        if (actualValues != null)
-        {
-            if (actualValues.Count == 0)
-            {
-                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Ühtegi lõiku ei leitud");
-            }
-
-            return RuleEvaluator.EvaluateNumeric(rule, actualValues);
-        }
-
-        return RuleEvaluator.EvaluateNumeric(rule, actualValue!.Value);
+        return RuleEvaluator.EvaluateNumeric(rule, actualValues);
     }
 
     protected override async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document,
@@ -193,7 +177,7 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         return Task.FromResult(RuleEvaluator.EvaluateLanguage(rule, detectedLanguages));
     }
 
-    private double? GetNumericValue(WordprocessingDocument document, NumericRule rule)
+    private List<double>? GetNumericValues(WordprocessingDocument document, NumericRule rule)
     {
         return (rule.Target, rule.Property) switch
         {
@@ -205,14 +189,6 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
                 _docxParsingService.GetPageMarginRight(document, rule.Unit),
             (ERuleTarget.Page, ERuleProperty.MarginFooter) => _docxParsingService.GetPageMarginFooter(document,
                 rule.Unit),
-            _ => null
-        };
-    }
-
-    private List<double>? GetNumericValues(WordprocessingDocument document, NumericRule rule)
-    {
-        return (rule.Target, rule.Property) switch
-        {
             (ERuleTarget.Paragraph, ERuleProperty.FontSize) => _docxParsingService.GetParagraphFontSizes(
                 document,
                 rule.StyleFilters,

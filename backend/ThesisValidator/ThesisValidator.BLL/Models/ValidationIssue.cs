@@ -12,13 +12,16 @@ public class ValidationIssue
 
     public string Message { get; set; } = string.Empty;
 
+    public string? Details { get; set; }
+
     public ERuleSeverity? Severity { get; set; }
 
     public static ValidationIssue CreateSkipped(string ruleId, string message, string reason) => new()
     {
         RuleId = ruleId,
         Skipped = true,
-        Message = $"{message}: {reason}"
+        Message = message,
+        Details = reason
     };
 
     public static ValidationIssue CreatePassed(string ruleId, string description) => new()
@@ -28,11 +31,16 @@ public class ValidationIssue
         Message = description
     };
 
-    public static ValidationIssue CreateFailed(string ruleId, string message, ERuleSeverity severity) => new()
+    public static ValidationIssue CreateFailed(
+        string ruleId,
+        string message,
+        ERuleSeverity severity,
+        string? details = null) => new()
     {
         RuleId = ruleId,
         Passed = false,
         Severity = severity,
-        Message = message
+        Message = message,
+        Details = details
     };
 }

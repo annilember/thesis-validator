@@ -15,40 +15,48 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         _logger = logger;
     }
 
-    public double? GetPageMarginLeft(WordprocessingDocument document, EUnit unit) =>
-        GetPageMargin(document, unit, m => m.Left?.Value);
+    public List<double> GetPageMarginLeft(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargins(document, unit, m => m.Left?.Value);
 
-    public double? GetPageMarginRight(WordprocessingDocument document, EUnit unit) =>
-        GetPageMargin(document, unit, m => m.Right?.Value);
+    public List<double> GetPageMarginRight(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargins(document, unit, m => m.Right?.Value);
 
-    public double? GetPageMarginTop(WordprocessingDocument document, EUnit unit) =>
-        GetPageMargin(document, unit, m => m.Top?.Value);
+    public List<double> GetPageMarginTop(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargins(document, unit, m => m.Top?.Value);
 
-    public double? GetPageMarginBottom(WordprocessingDocument document, EUnit unit) =>
-        GetPageMargin(document, unit, m => m.Bottom?.Value);
+    public List<double> GetPageMarginBottom(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargins(document, unit, m => m.Bottom?.Value);
 
-    public double? GetPageMarginFooter(WordprocessingDocument document, EUnit unit) =>
-        GetPageMargin(document, unit, m => m.Footer?.Value);
+    public List<double> GetPageMarginFooter(WordprocessingDocument document, EUnit unit) =>
+        GetPageMargins(document, unit, m => m.Footer?.Value);
 
-    private double? GetPageMargin(WordprocessingDocument document, EUnit unit, Func<PageMargin, long?> selector)
+    private List<double> GetPageMargins(WordprocessingDocument document, EUnit unit, Func<PageMargin, long?> selector)
     {
-        // TODO: kontrolli kõiki sektsioone
-        var pageMargin = document.MainDocumentPart?.Document?.Body?
-            .GetFirstChild<SectionProperties>()?
-            .GetFirstChild<PageMargin>();
-
-        if (pageMargin == null)
+        var body = document.MainDocumentPart?.Document?.Body;
+        if (body == null)
         {
-            return null;
+            return [];
         }
 
-        var value = selector(pageMargin);
-        if (value == null)
+        var results = new List<double>();
+        var sectionProperties = body.Descendants<SectionProperties>().ToList();
+
+        foreach (var section in sectionProperties)
         {
-            return null;
+            var pageMargin = section.GetFirstChild<PageMargin>();
+            if (pageMargin == null)
+            {
+                continue;
+            }
+
+            var value = selector(pageMargin);
+            if (value != null)
+            {
+                results.Add(UnitConverter.TwipsToUnit(value.Value, unit));
+            }
         }
 
-        return UnitConverter.TwipsToUnit(value.Value, unit);
+        return results;
     }
 
     public List<double> GetParagraphFontSizes(
