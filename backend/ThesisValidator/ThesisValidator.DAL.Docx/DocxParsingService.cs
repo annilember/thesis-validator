@@ -79,7 +79,14 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             paragraphs = paragraphs.Where(p =>
             {
                 var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                var font = StyleResolver.ResolveFont(document, styleId);
+                var fontFromStyle = StyleResolver.ResolveFont(document, styleId);
+
+                // For font based size check, check run level font as well
+                var fontFromRun = p.Descendants<Run>()
+                    .Select(r => r.RunProperties?.RunFonts?.Ascii?.Value)
+                    .FirstOrDefault(f => f != null);
+
+                var font = fontFromStyle ?? fontFromRun;
                 return font != null && fontFilters.Contains(font);
             });
         }
@@ -224,38 +231,50 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
     public int GetMinParagraphCountInSubsection(WordprocessingDocument document)
     {
-        //TODO: kontrolli loogika üle.
+        //TODO: Hetkel tagastab kõige väiksema lõikude arvu kõigis alampeatükkides.
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
-            return 0;
-
-        var paragraphs = body.Descendants<Paragraph>().ToList();
-        var headingStyles = new[] { "Heading2", "Heading3" };
-
-        int minCount = int.MaxValue;
-        int currentCount = 0;
-        bool inSubsection = false;
-
-        foreach (var paragraph in paragraphs)
         {
-            var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+            return 0;
+        }
 
-            if (headingStyles.Contains(styleId))
+        var minCount = int.MaxValue;
+        var currentCount = 0;
+        var inSubsection = false;
+
+        var elements = body.ChildElements.ToList();
+
+        foreach (var element in elements)
+        {
+            if (element is Paragraph paragraph)
             {
-                if (inSubsection)
-                    minCount = Math.Min(minCount, currentCount);
+                var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
-                currentCount = 0;
-                inSubsection = true;
+                if (DocxStyles.SubHeadings.Contains(styleId))
+                {
+                    if (inSubsection)
+                    {
+                        minCount = Math.Min(minCount, currentCount);
+                    }
+
+                    currentCount = 0;
+                    inSubsection = true;
+                }
+                else if (inSubsection && (styleId == DocxStyles.Normal || styleId == null))
+                {
+                    currentCount++;
+                }
             }
-            else if (inSubsection && styleId == "Normal")
+            else if (inSubsection && element is Table)
             {
                 currentCount++;
             }
         }
 
         if (inSubsection)
+        {
             minCount = Math.Min(minCount, currentCount);
+        }
 
         return minCount == int.MaxValue ? 0 : minCount;
     }

@@ -25,4 +25,9 @@ public static class DocxStyles
     [
         Heading, Heading1, HeadingUnnumbered, HeadingUnnumbered2, Heading1SyncFusion
     ];
+
+    public static readonly IReadOnlyList<string> SubHeadings =
+    [
+        Heading2, Heading3
+    ];
 }
