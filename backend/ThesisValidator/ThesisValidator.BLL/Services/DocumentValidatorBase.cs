@@ -29,6 +29,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
 
         foreach (var rule in rules)
         {
+            // TODO: tõsta RuleEvaluator sisse!
             var issue = rule.Enabled
                 ? await ValidateRuleAsync(document, rawStream, rule)
                 : ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegel pole sisse lülitatud");

@@ -12,6 +12,7 @@ namespace ThesisValidator.BLL.Docx;
 
 public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
 {
+    // TODO: tõsta kõik hinnangu RuleEvaluator sisse!
     private readonly IDocumentParsingService<WordprocessingDocument> _docxParsingService;
     private readonly ILanguageDetectionService _languageDetectionService;
     private readonly IDocumentRenderingService _renderingService;

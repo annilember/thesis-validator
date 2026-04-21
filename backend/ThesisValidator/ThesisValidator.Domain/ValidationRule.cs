@@ -6,6 +6,8 @@ public abstract class ValidationRule
 {
     public string RuleId { get; set; } = string.Empty;
 
+    public string RuleName { get; set; } = string.Empty;
+
     public ERuleType Type { get; set; }
 
     public bool Enabled { get; set; }

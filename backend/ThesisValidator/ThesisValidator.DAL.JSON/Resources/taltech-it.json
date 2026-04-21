@@ -4,7 +4,8 @@
   "version": "2025",
   "rules": [
     {
-      "ruleId": "page_margin_top",
+      "ruleId": "N-001",
+      "ruleName": "page_margin_top",
       "type": "numeric",
       "enabled": true,
       "target": "page",
@@ -17,7 +18,8 @@
       "message": "Ülemine veeris peab olema 2,5 cm"
     },
     {
-      "ruleId": "page_margin_bottom",
+      "ruleId": "N-002",
+      "ruleName": "page_margin_bottom",
       "type": "numeric",
       "enabled": true,
       "target": "page",
@@ -30,7 +32,8 @@
       "message": "Alumine veeris peab olema 2,5 cm"
     },
     {
-      "ruleId": "page_margin_left",
+      "ruleId": "N-003",
+      "ruleName": "page_margin_left",
       "type": "numeric",
       "enabled": true,
       "target": "page",
@@ -43,7 +46,8 @@
       "message": "Vasak veeris peab olema 3,0 cm"
     },
     {
-      "ruleId": "page_margin_right",
+      "ruleId": "N-004",
+      "ruleName": "page_margin_right",
       "type": "numeric",
       "enabled": true,
       "target": "page",
@@ -56,7 +60,8 @@
       "message": "Parem veeris peab olema 3,0 cm"
     },
     {
-      "ruleId": "page_margin_footer",
+      "ruleId": "N-005",
+      "ruleName": "page_margin_footer",
       "type": "numeric",
       "enabled": true,
       "target": "page",
@@ -69,7 +74,8 @@
       "message": "Leheküljenumber peab asuma 1,5 cm kaugusel alumisest servast"
     },
     {
-      "ruleId": "font_size_body",
+      "ruleId": "N-006",
+      "ruleName": "font_size_body",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -85,7 +91,8 @@
       ]
     },
     {
-      "ruleId": "font_size_heading1",
+      "ruleId": "N-007",
+      "ruleName": "font_size_heading1",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -104,7 +111,8 @@
       ]
     },
     {
-      "ruleId": "font_size_heading2",
+      "ruleId": "N-008",
+      "ruleName": "font_size_heading2",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -120,7 +128,8 @@
       ]
     },
     {
-      "ruleId": "font_size_heading3",
+      "ruleId": "N-009",
+      "ruleName": "font_size_heading3",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -136,7 +145,8 @@
       ]
     },
     {
-      "ruleId": "font_size_toc",
+      "ruleId": "N-010",
+      "ruleName": "font_size_toc",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -153,7 +163,8 @@
       ]
     },
     {
-      "ruleId": "font_size_caption",
+      "ruleId": "N-011",
+      "ruleName": "font_size_caption",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -169,7 +180,8 @@
       ]
     },
     {
-      "ruleId": "font_size_table",
+      "ruleId": "N-012",
+      "ruleName": "font_size_table",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -185,7 +197,8 @@
       ]
     },
     {
-      "ruleId": "font_size_code",
+      "ruleId": "N-013",
+      "ruleName": "font_size_code",
       "type": "numeric",
       "enabled": true,
       "target": "paragraph",
@@ -199,7 +212,8 @@
       "fontFilters": ["Courier New", "Consolas"]
     },
     {
-      "ruleId": "heading_bold",
+      "ruleId": "B-001",
+      "ruleName": "heading_bold",
       "type": "boolean",
       "enabled": true,
       "target": "paragraph",
@@ -213,7 +227,8 @@
       ]
     },
     {
-      "ruleId": "text_alignment",
+      "ruleId": "E-001",
+      "ruleName": "text_alignment",
       "type": "enum",
       "enabled": true,
       "target": "paragraph",
@@ -229,7 +244,8 @@
       ]
     },
     {
-      "ruleId": "subsection_min_paragraphs",
+      "ruleId": "C-001",
+      "ruleName": "subsection_min_paragraphs",
       "type": "count",
       "enabled": true,
       "target": "section",
@@ -240,7 +256,8 @@
       "message": "Alampeatükk peaks sisaldama rohkem kui ühte lõiku"
     },
     {
-      "ruleId": "sections_order",
+      "ruleId": "O-001",
+      "ruleName": "sections_order",
       "type": "order",
       "enabled": true,
       "target": "document",
@@ -257,7 +274,8 @@
       "message": "Lõputöö osad ei ole õiges järjekorras"
     },
     {
-      "ruleId": "glossary_terms_in_text",
+      "ruleId": "X-001",
+      "ruleName": "glossary_terms_in_text",
       "type": "crossReference",
       "sectionTitle": "Lühendite ja mõistete sõnastik",
       "enabled": true,
@@ -268,7 +286,8 @@
       "message": "Lühendite ja mõistete sõnastiku terminid peavad esinema töö põhitekstis"
     },
     {
-      "ruleId": "abstract_language_main",
+      "ruleId": "L-001",
+      "ruleName": "abstract_language_main",
       "type": "language",
       "enabled": true,
       "target": "section",
@@ -280,7 +299,8 @@
       "message": "Töö põhikeeles kirjutatud lühikokkuvõte peab olema eesti keeles"
     },
     {
-      "ruleId": "main_content_page_count_bachelor",
+      "ruleId": "C-002",
+      "ruleName": "main_content_page_count_bachelor",
       "type": "count",
       "enabled": true,
       "target": "document",
@@ -293,7 +313,8 @@
       "message": "Bakalaureusetöö põhiosa peab üldjuhul olema 25-35 lehekülge"
     },
     {
-      "ruleId": "main_content_page_count_master",
+      "ruleId": "C-003",
+      "ruleName": "main_content_page_count_master",
       "type": "count",
       "enabled": true,
       "target": "document",
@@ -306,7 +327,8 @@
       "message": "Magistritöö põhiosa peab üldjuhul olema 40-60 lehekülge"
     },
     {
-      "ruleId": "appendix_title_format",
+      "ruleId": "R-001",
+      "ruleName": "appendix_title_format",
       "type": "regex",
       "enabled": true,
       "target": "paragraph",
