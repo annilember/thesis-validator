@@ -22,6 +22,24 @@ public class JsonRuleRepository : IRuleRepository
         };
     }
 
+    public async Task<IEnumerable<ValidationTemplate>> GetAllTemplatesAsync()
+    {
+        var files = Directory.GetFiles(_resourcesPath, "*.json");
+        var templates = new List<ValidationTemplate>();
+
+        foreach (var file in files)
+        {
+            var templateId = Path.GetFileNameWithoutExtension(file);
+            var template = await GetTemplateAsync(templateId);
+            if (template != null)
+            {
+                templates.Add(template);
+            }
+        }
+
+        return templates;
+    }
+
     public async Task<ValidationTemplate?> GetTemplateAsync(string templateId)
     {
         // TODO: look again if this can be implemented with existing serialization options, not raw switching.

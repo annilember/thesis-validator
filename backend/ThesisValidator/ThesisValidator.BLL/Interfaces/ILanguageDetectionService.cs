@@ -1,6 +1,6 @@
 using ThesisValidator.Domain.Enums;
 
-namespace ThesisValidator.DAL.Interfaces;
+namespace ThesisValidator.BLL.Interfaces;
 
 public interface ILanguageDetectionService
 {

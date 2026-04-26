@@ -1,12 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import FileUpload from '@/components/FileUpload.vue'
 import ValidationResults from '@/components/ValidationResults.vue'
 import ValidationOptions from '@/components/ValidationOptions.vue'
 import AboutSection from '@/components/AboutSection.vue'
 import { ValidationService } from '@/services/ValidationService'
 import type { IValidationResponse } from '@/types/IValidationResponse'
-import type { ValidationOptions as IValidationOptions } from '@/components/ValidationOptions.vue'
+import { TemplateService } from '@/services/TemplateService'
+import type { ITemplateDto } from '@/types/ITemplateDto'
+import type { IValidationOptions } from '@/types/IValidationOptions'
+
+const templateService = new TemplateService()
+const templates = ref<ITemplateDto[]>([])
+
+onMounted(async () => {
+  const response = await templateService.getTemplatesAsync()
+  if (response.data) {
+    templates.value = response.data
+  }
+})
 
 const validationService = new ValidationService()
 
@@ -33,7 +45,9 @@ const onOptionsChanged = (newOptions: IValidationOptions) => {
 }
 
 const validate = async () => {
-  if (!selectedFile.value) return
+  if (!selectedFile.value) {
+    return
+  }
 
   isLoading.value = true
   errors.value = []
@@ -72,7 +86,7 @@ const validate = async () => {
 
       <FileUpload @file-selected="onFileSelected" />
 
-      <ValidationOptions @options-changed="onOptionsChanged" />
+      <ValidationOptions :templates="templates" @options-changed="onOptionsChanged" />
 
       <div v-if="errors.length > 0" class="text-red-600 text-sm">
         <p v-for="error in errors" :key="error">{{ error }}</p>

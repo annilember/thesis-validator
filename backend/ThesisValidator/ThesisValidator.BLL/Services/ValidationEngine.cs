@@ -16,6 +16,13 @@ public class ValidationEngine : IValidationEngine
         _validators = validators;
     }
 
+    public async Task<IEnumerable<TemplateDto>> GetAllTemplatesAsync()
+    {
+        var templates = await _ruleRepository.GetAllTemplatesAsync();
+
+        return templates.Select(t => new TemplateDto(t.TemplateId, t.Name, t.Version));
+    }
+
     public async Task<ValidationResult> ValidateAsync(
         Stream document,
         string fileName,

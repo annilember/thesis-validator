@@ -61,6 +61,7 @@ public class ValidationController : ControllerBase
         }
         catch (Exception ex)
         {
+            //TODO: change back to - return StatusCode(500, new { error = "Valideerimise käigus tekkis ootamatu viga" });
             return StatusCode(500, new { error = ex.Message, stackTrace = ex.ToString() });
         }
     }

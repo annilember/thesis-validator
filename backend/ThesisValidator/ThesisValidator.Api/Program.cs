@@ -7,7 +7,6 @@ using ThesisValidator.BLL.Services;
 using ThesisValidator.DAL.Docx;
 using ThesisValidator.DAL.Interfaces;
 using ThesisValidator.DAL.JSON;
-using ThesisValidator.DAL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

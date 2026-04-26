@@ -5,6 +5,8 @@ namespace ThesisValidator.BLL.Interfaces;
 
 public interface IValidationEngine
 {
+    Task<IEnumerable<TemplateDto>> GetAllTemplatesAsync();
+
     Task<ValidationResult> ValidateAsync(
         Stream document,
         string fileName,

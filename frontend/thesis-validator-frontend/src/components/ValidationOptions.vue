@@ -1,19 +1,17 @@
 <script setup lang="ts">
+import type { ITemplateDto } from '@/types/ITemplateDto';
+import type { IValidationOptions } from '@/types/IValidationOptions';
 import { ref } from 'vue'
 
-export interface ValidationOptions {
-  templateId: string
-  thesisType: 'bachelor' | 'master'
-  language: 'et'
-  curriculumLanguage: 'et' | 'en'
-  foreignTitle: string
-}
-
-const emit = defineEmits<{
-  optionsChanged: [options: ValidationOptions]
+const props = defineProps<{
+  templates: ITemplateDto[]
 }>()
 
-const options = ref<ValidationOptions>({
+const emit = defineEmits<{
+  optionsChanged: [options: IValidationOptions]
+}>()
+
+const options = ref<IValidationOptions>({
   templateId: 'taltech-it',
   thesisType: 'bachelor',
   language: 'et',
@@ -35,7 +33,9 @@ const onChanged = () => {
         <label class="text-sm text-gray-600">Valideerimismall</label>
         <select v-model="options.templateId" @change="onChanged"
           class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 bg-white cursor-pointer">
-          <option value="taltech-it">TalTech IT-teaduskond (2025)</option>
+          <option v-for="t in props.templates" :key="t.templateId" :value="t.templateId">
+            {{ t.name }} ({{ t.version }})
+          </option>
         </select>
       </div>
 

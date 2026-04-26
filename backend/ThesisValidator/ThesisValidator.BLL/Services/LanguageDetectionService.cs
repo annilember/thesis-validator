@@ -1,8 +1,8 @@
 using Lingua;
-using ThesisValidator.DAL.Interfaces;
+using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.Domain.Enums;
 
-namespace ThesisValidator.DAL.Services;
+namespace ThesisValidator.BLL.Services;
 
 public class LanguageDetectionService : ILanguageDetectionService
 {

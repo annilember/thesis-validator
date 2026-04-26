@@ -1,0 +1,21 @@
+{
+  "templateId": "test-template",
+  "name": "Testmall",
+  "version": "2026v1",
+  "rules": [
+    {
+      "ruleId": "N-001",
+      "ruleName": "page_margin_top",
+      "type": "numeric",
+      "enabled": true,
+      "target": "page",
+      "property": "marginTop",
+      "expectedValue": 2.5,
+      "unit": "cm",
+      "tolerance": 0.05,
+      "severity": "error",
+      "description": "Ülemine veeris",
+      "message": "Ülemine veeris peab olema 2,5 cm"
+    }
+  ]
+}
