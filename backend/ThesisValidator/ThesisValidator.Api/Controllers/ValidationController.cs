@@ -10,13 +10,15 @@ namespace ThesisValidator.Api.Controllers;
 public class ValidationController : ControllerBase
 {
     private readonly IValidationEngine _validationEngine;
+    private readonly ILogger<ValidationController> _logger;
 
     private static readonly string[] AllowedMimeTypes =
         ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
-    public ValidationController(IValidationEngine validationEngine)
+    public ValidationController(IValidationEngine validationEngine, ILogger<ValidationController> logger)
     {
         _validationEngine = validationEngine;
+        _logger = logger;
     }
 
     [HttpPost]
@@ -61,8 +63,9 @@ public class ValidationController : ControllerBase
         }
         catch (Exception ex)
         {
-            //TODO: change back to - return StatusCode(500, new { error = "Valideerimise käigus tekkis ootamatu viga" });
-            return StatusCode(500, new { error = ex.Message, stackTrace = ex.ToString() });
+            _logger.LogError(ex, "Valideerimise käigus tekkis ootamatu viga: {FileName}", file.FileName);
+
+            return StatusCode(500, new { error = "Valideerimise käigus tekkis ootamatu viga" });
         }
     }
 }
