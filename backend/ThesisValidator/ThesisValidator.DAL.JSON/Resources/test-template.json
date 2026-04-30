@@ -14,7 +14,7 @@
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Ülemine veeris",
+      "description": "Ülemine veeris 2,5 cm",
       "message": "Ülemine veeris peab olema 2,5 cm"
     }
   ]

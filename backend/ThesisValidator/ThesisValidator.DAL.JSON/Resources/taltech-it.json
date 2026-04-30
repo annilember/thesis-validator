@@ -14,7 +14,7 @@
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Ülemine veeris",
+      "description": "Ülemine veeris 2,5 cm",
       "message": "Ülemine veeris peab olema 2,5 cm"
     },
     {
@@ -28,7 +28,7 @@
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Alumine veeris",
+      "description": "Alumine veeris 2,5 cm",
       "message": "Alumine veeris peab olema 2,5 cm"
     },
     {
@@ -42,7 +42,7 @@
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Vasak veeris",
+      "description": "Vasak veeris 3,0 cm",
       "message": "Vasak veeris peab olema 3,0 cm"
     },
     {
@@ -56,7 +56,7 @@
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Parem veeris",
+      "description": "Parem veeris 3,0 cm",
       "message": "Parem veeris peab olema 3,0 cm"
     },
     {
@@ -70,7 +70,7 @@
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Leheküljenumbri kaugus servast",
+      "description": "Leheküljenumbri kaugus servast 1,5 cm",
       "message": "Leheküljenumber peab asuma 1,5 cm kaugusel alumisest servast"
     },
     {
@@ -84,7 +84,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "Põhiteksti fondi suurus",
+      "description": "Põhiteksti fondi suurus 12 pt",
       "message": "Põhiteksti fondi suurus peab olema 12 pt",
       "styleFilters": [
         "Normal"
@@ -101,7 +101,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "I taseme peakirja fondi suurus",
+      "description": "I taseme peakirja fondi suurus 16 pt",
       "message": "I taseme peakirja fondi suurus peab olema 16 pt",
       "styleFilters": [
         "Heading1",
@@ -121,7 +121,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "II taseme peakirja fondi suurus",
+      "description": "II taseme peakirja fondi suurus 14 pt",
       "message": "II taseme peakirja fondi suurus peab olema 14 pt",
       "styleFilters": [
         "Heading2"
@@ -138,7 +138,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "III taseme peakirja fondi suurus",
+      "description": "III taseme peakirja fondi suurus 12 pt",
       "message": "III taseme peakirja fondi suurus peab olema 12 pt",
       "styleFilters": [
         "Heading3"
@@ -155,7 +155,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "Sisukorra teksti fondi suurus",
+      "description": "Sisukorra teksti fondi suurus 12 pt",
       "message": "Sisukorra teksti fondi suurus peab olema 12 pt",
       "styleFilters": [
         "TOC2",
@@ -173,7 +173,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "Tabeli või joonise pealkirja fondi suurus",
+      "description": "Tabeli või joonise pealkirja fondi suurus 10 pt",
       "message": "Tabeli või joonise pealkirja fondi suurus peab olema 10 pt",
       "styleFilters": [
         "Caption"
@@ -190,7 +190,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "Tabeli teksti fondi suurus",
+      "description": "Tabeli teksti fondi suurus 11 pt",
       "message": "Tabeli sees oleva teksti fondi suurus peab olema 11 pt",
       "styleFilters": [
         "Tabletext"
@@ -207,7 +207,7 @@
       "unit": "pt",
       "tolerance": 0.5,
       "severity": "error",
-      "description": "Programmikoodi fondi suurus",
+      "description": "Programmikoodi fondi suurus 10 pt",
       "message": "Programmikoodi teksti fondi suurus peab olema 10 pt",
       "fontFilters": ["Courier New", "Consolas"]
     },
@@ -237,7 +237,7 @@
         "justified"
       ],
       "severity": "error",
-      "description": "Põhiteksti joondus",
+      "description": "Põhiteksti joondus on rööpjoondus",
       "message": "Põhiteksti joondus peab olema rööpjoondus",
       "styleFilters": [
         "Normal"
@@ -252,7 +252,7 @@
       "property": "paragraphCount",
       "minValue": 2,
       "severity": "warning",
-      "description": "Alampeatüki sisu pikkus",
+      "description": "Alampeatüki sisu pikkus on vähemalt 2 lõiku",
       "message": "Alampeatükk peaks sisaldama rohkem kui ühte lõiku"
     },
     {
@@ -270,8 +270,8 @@
         "Kasutatud kirjandus"
       ],
       "severity": "error",
-      "description": "Lõputöö osade järjekord",
-      "message": "Lõputöö osad ei ole õiges järjekorras"
+      "description": "Lõputöö osad on järjekorras: Lühikokkuvõte, Sisukord, Sissejuhatus, Kokkuvõte, Kasutatud kirjandus",
+      "message": "Lõputöö osad ei ole õiges järjekorras (Lühikokkuvõte, Sisukord, Sissejuhatus, Kokkuvõte, Kasutatud kirjandus)"
     },
     {
       "ruleId": "X-001",
@@ -282,7 +282,7 @@
       "target": "document",
       "referenceTarget": "bodyText",
       "severity": "error",
-      "description": "Lühendite sõnastiku terminid esinevad põhitekstis",
+      "description": "Lühendite sõnastiku terminid esinevad töö põhitekstis",
       "message": "Lühendite ja mõistete sõnastiku terminid peavad esinema töö põhitekstis"
     },
     {
@@ -309,8 +309,8 @@
       "minValue": 25,
       "maxValue": 35,
       "severity": "warning",
-      "description": "Bakalaureusetöö põhiosa maht",
-      "message": "Bakalaureusetöö põhiosa peab üldjuhul olema 25-35 lehekülge"
+      "description": "Bakalaureusetöö põhiosa maht on 25-35 lk",
+      "message": "Bakalaureusetöö põhiosa peab üldjuhul olema 25-35 ll"
     },
     {
       "ruleId": "C-003",
@@ -323,8 +323,8 @@
       "minValue": 30,
       "maxValue": 60,
       "severity": "warning",
-      "description": "Magistritöö põhiosa maht",
-      "message": "Magistritöö põhiosa peab üldjuhul olema 40-60 lehekülge"
+      "description": "Magistritöö põhiosa maht on 40-60 lk",
+      "message": "Magistritöö põhiosa peab üldjuhul olema 40-60 lk"
     },
     {
       "ruleId": "R-001",
@@ -336,7 +336,7 @@
       "pattern": "^Lisa \\d+ \u2013 .+",
       "afterSectionTitle": "Kasutatud kirjandus",
       "severity": "error",
-      "description": "Lisa pealkirja formaat",
+      "description": "Lisade pealkirjad on formaadis 'Lisa 1 – Pealkiri'",
       "message": "Lisa pealkiri peab algama kujul 'Lisa 1 – Pealkiri'"
     }
   ]
