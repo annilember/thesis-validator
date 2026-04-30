@@ -15,6 +15,10 @@ public class ValidationController : ControllerBase
     private static readonly string[] AllowedMimeTypes =
         ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
+    private const long MaxFileSizeMegaBytes = 50;
+
+    private const long MaxFileSizeBytes = MaxFileSizeMegaBytes * 1024 * 1024;
+
     public ValidationController(IValidationEngine validationEngine, ILogger<ValidationController> logger)
     {
         _validationEngine = validationEngine;
@@ -38,6 +42,11 @@ public class ValidationController : ControllerBase
         if (!AllowedMimeTypes.Contains(file.ContentType))
         {
             return BadRequest(new { error = "Valitud failiformaat ei ole toetatud" });
+        }
+
+        if (file.Length > MaxFileSizeBytes)
+        {
+            return BadRequest(new { error = $"Fail on liiga suur (üle {MaxFileSizeMegaBytes} MB)" });
         }
 
         try
