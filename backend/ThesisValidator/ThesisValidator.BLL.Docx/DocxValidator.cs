@@ -45,7 +45,8 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         return await ValidateRulesAsync(wordDocument, memoryStream, rules);
     }
 
-    protected override async Task<ValidationIssue> ValidateNumericRuleAsync(WordprocessingDocument document,
+    protected override async Task<ValidationIssue> ValidateNumericRuleAsync(
+        WordprocessingDocument document,
         NumericRule rule)
     {
         var actualValues = (rule.Target, rule.Property) switch
@@ -62,6 +63,8 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
                 document,
                 rule.StyleFilters,
                 rule.FontFilters),
+            (ERuleTarget.Table, ERuleProperty.FontSize)
+                => _docxParsingService.GetTableCellFontSizes(document, rule.AfterSectionTitle, rule.BeforeSectionTitle),
             _ => null
         };
 

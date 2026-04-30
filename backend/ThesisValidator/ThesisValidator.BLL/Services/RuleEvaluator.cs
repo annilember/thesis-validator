@@ -27,7 +27,6 @@ public class RuleEvaluator : IRuleEvaluator
 
         var failedValues = actualValues
             .Where(v => Math.Abs(v - rule.ExpectedValue) > rule.Tolerance)
-            .Distinct()
             .ToList();
 
         if (failedValues.Count == 0)
@@ -35,9 +34,10 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
         }
 
+        var distinctFailed = failedValues.Distinct().ToList();
         var unit = rule.Unit.ToString().ToLower();
-        var failedStr = string.Join(", ", failedValues.Select(v => $"{v:F2}{unit}"));
-        var details = $"Leitud {failedValues.Count} erinevat viga: {failedStr}, oodatav: {rule.ExpectedValue}{unit}";
+        var failedStr = string.Join(", ", distinctFailed.Select(v => $"{v:F2}{unit}"));
+        var details = $"Leitud {failedValues.Count} viga ({distinctFailed.Count} erinevat väärtust: {failedStr}), oodatav: {rule.ExpectedValue}{unit}";
 
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }

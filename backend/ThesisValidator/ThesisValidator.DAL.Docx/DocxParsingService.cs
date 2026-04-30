@@ -1,3 +1,4 @@
+using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using ThesisValidator.Domain.Enums;
@@ -64,74 +65,68 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         List<string>? styleFilters,
         List<string>? fontFilters)
     {
+        if (styleFilters != null && styleFilters.Count > 0)
+        {
+            return GetFontSizesByStyle(document, styleFilters);
+        }
+
+        if (fontFilters != null && fontFilters.Count > 0)
+        {
+            return GetFontSizesByFont(document, fontFilters);
+        }
+
+        return [];
+    }
+
+    public List<double> GetTableCellFontSizes(
+        WordprocessingDocument document,
+        string? afterSectionTitle,
+        string? beforeSectionTitle)
+    {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
         {
             return [];
         }
 
-        var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
-
-        if (styleFilters != null && styleFilters.Count > 0)
-        {
-            paragraphs = paragraphs.Where(p =>
-            {
-                var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                return styleFilters.Contains(styleId ?? string.Empty) ||
-                       (styleId == null && styleFilters.Contains(DocxStyles.Normal));
-            });
-        }
-
-        if (fontFilters != null && fontFilters.Count > 0)
-        {
-            paragraphs = paragraphs.Where(p =>
-            {
-                var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                var fontFromStyle = StyleResolver.ResolveFont(document, styleId);
-
-                // For font based size check, check run level font as well
-                var fontFromRun = p.Descendants<Run>()
-                    .Select(r => r.RunProperties?.RunFonts?.Ascii?.Value)
-                    .FirstOrDefault(f => f != null);
-
-                var font = fontFromStyle ?? fontFromRun;
-                return font != null && fontFilters.Contains(font);
-            });
-        }
-
+        var elementsInScope = GetElementsInScope(body, afterSectionTitle, beforeSectionTitle);
         var fontSizes = new List<double>();
 
-        foreach (var paragraph in paragraphs)
+        foreach (var element in elementsInScope)
         {
-            var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-
-            // WordprocessingML paragraphs without an explicit style inherit from Normal by default
-            var effectiveStyleId = styleId ?? DocxStyles.Normal;
-            double? halfPoints;
-
-            if (fontFilters != null && fontFilters.Count > 0)
+            if (element is not Table table)
             {
-                // In case of fontFilters also check fonts on run level
-                var runVal = paragraph.Descendants<Run>()
-                    .Select(r => r.RunProperties?.FontSize?.Val?.Value)
-                    .FirstOrDefault(v => v != null);
+                continue;
+            }
 
-                double? halfPointsFromRun = null;
-                if (runVal != null && double.TryParse(runVal, out var runResult))
+            foreach (var cell in table.Descendants<TableCell>())
+            {
+                foreach (var paragraph in cell.Descendants<Paragraph>())
                 {
-                    halfPointsFromRun = runResult;
+                    var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                    var effectiveStyleId = styleId ?? DocxStyles.Normal;
+
+                    var runSizes = paragraph.Descendants<Run>()
+                        .Select(r => r.RunProperties?.FontSize?.Val?.Value)
+                        .Where(v => v != null)
+                        .Select(v => double.TryParse(v, out var parsed) ? parsed : (double?)null)
+                        .Where(v => v != null)
+                        .Select(v => UnitConverter.HalfPointsToPt((int)v!.Value))
+                        .ToList();
+
+                    if (runSizes.Count > 0)
+                    {
+                        fontSizes.AddRange(runSizes);
+                    }
+                    else
+                    {
+                        var fromStyle = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+                        if (fromStyle != null)
+                        {
+                            fontSizes.Add(UnitConverter.HalfPointsToPt((int)fromStyle));
+                        }
+                    }
                 }
-
-                halfPoints = halfPointsFromRun ?? StyleResolver.ResolveFontSize(document, effectiveStyleId);
-            }
-            else
-            {
-                halfPoints = StyleResolver.ResolveFontSize(document, effectiveStyleId);
-            }
-
-            if (halfPoints != null)
-            {
-                fontSizes.Add(UnitConverter.HalfPointsToPt((int)halfPoints));
             }
         }
 
@@ -329,25 +324,11 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return [];
         }
 
-        var elements = body.ChildElements.ToList();
-        var foundHeading = false;
+        var elements = GetElementsInScope(body, afterSectionTitle: sectionTitle, beforeSectionTitle: null);
 
         foreach (var element in elements)
         {
-            if (element is Paragraph paragraph)
-            {
-                var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                var text = paragraph.InnerText.Trim();
-
-                if ((styleId == DocxStyles.HeadingUnnumbered || styleId == DocxStyles.Heading1 ||
-                     styleId == DocxStyles.Heading) && text == sectionTitle)
-                {
-                    foundHeading = true;
-                    continue;
-                }
-            }
-
-            if (foundHeading && element is Table table)
+            if (element is Table table)
             {
                 return table.Descendants<TableRow>()
                     .Select(row => row.Descendants<TableCell>().FirstOrDefault()?.InnerText.Trim() ?? string.Empty)
@@ -384,29 +365,20 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return [];
         }
 
-        var elements = body.ChildElements.ToList();
-        var foundHeading = false;
+        var elements = GetElementsInScope(body, afterSectionTitle: sectionTitle, beforeSectionTitle: null);
         var paragraphs = new List<string>();
 
         foreach (var element in elements)
         {
-            if (element is Paragraph paragraph)
+            if (element is Paragraph p)
             {
-                var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                var text = paragraph.InnerText.Trim();
-
-                if (DocxStyles.AllHeadings.Contains(styleId) && text == sectionTitle)
-                {
-                    foundHeading = true;
-                    continue;
-                }
-
-                if (foundHeading && DocxStyles.AllHeadings.Contains(styleId))
+                if (DocxStyles.AllHeadings.Contains(p.ParagraphProperties?.ParagraphStyleId?.Val?.Value))
                 {
                     break;
                 }
 
-                if (foundHeading && !string.IsNullOrEmpty(text))
+                var text = p.InnerText.Trim();
+                if (!string.IsNullOrEmpty(text))
                 {
                     paragraphs.Add(text);
                 }
@@ -414,5 +386,167 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         }
 
         return paragraphs;
+    }
+
+    private List<double> GetFontSizesByStyle(WordprocessingDocument document, List<string> styleFilters)
+    {
+        var body = document.MainDocumentPart?.Document?.Body;
+        if (body == null)
+        {
+            return [];
+        }
+
+        var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
+        paragraphs = paragraphs.Where(p =>
+        {
+            var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+            return styleFilters.Contains(styleId ?? string.Empty) ||
+                   (styleId == null && styleFilters.Contains(DocxStyles.Normal));
+        });
+
+        var fontSizes = new List<double>();
+
+        foreach (var paragraph in paragraphs)
+        {
+            var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+
+            // WordprocessingML paragraphs without an explicit style inherit from Normal by default
+            var effectiveStyleId = styleId ?? DocxStyles.Normal;
+
+            // Do not check run level for Normal text
+            if (effectiveStyleId != DocxStyles.Normal)
+            {
+                foreach (var run in paragraph.Descendants<Run>())
+                {
+                    _logger.LogDebug("Style: {Style}, Run text: '{Text}', FontSize: {Size}",
+                        effectiveStyleId,
+                        run.InnerText,
+                        run.RunProperties?.FontSize?.Val?.Value);
+                }
+
+                var runSizes = paragraph.Descendants<Run>()
+                    .Where(r => !string.IsNullOrEmpty(r.InnerText))
+                    .Where(r => !r.Descendants<FieldChar>().Any())
+                    .Where(r => !r.Descendants<FieldCode>().Any())
+                    .Select(r => r.RunProperties?.FontSize?.Val?.Value)
+                    .Where(v => v != null)
+                    .Select(v => double.TryParse(v, out var parsed) ? parsed : (double?)null)
+                    .Where(v => v != null)
+                    .Select(v => UnitConverter.HalfPointsToPt((int)v!.Value))
+                    .ToList();
+
+                if (runSizes.Count > 0)
+                {
+                    fontSizes.AddRange(runSizes);
+                    continue;
+                }
+            }
+
+            var fromStyle = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+            if (fromStyle != null)
+            {
+                fontSizes.Add(UnitConverter.HalfPointsToPt((int)fromStyle));
+            }
+        }
+
+        return fontSizes;
+    }
+
+    private List<double> GetFontSizesByFont(WordprocessingDocument document, List<string> fontFilters)
+    {
+        var body = document.MainDocumentPart?.Document?.Body;
+        if (body == null)
+        {
+            return [];
+        }
+
+        var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
+
+        paragraphs = paragraphs.Where(p =>
+        {
+            var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+            var fontFromStyle = StyleResolver.ResolveFont(document, styleId);
+
+            // TODO: Currently only the first run's font is checked. For more accurate
+            // validation, all runs should be checked as a paragraph may contain mixed fonts.
+            var fontFromRun = p.Descendants<Run>()
+                .Select(r => r.RunProperties?.RunFonts?.Ascii?.Value)
+                .FirstOrDefault(f => f != null);
+
+            var font = fontFromRun ?? fontFromStyle;
+            return font != null && fontFilters.Contains(font);
+        });
+
+        var fontSizes = new List<double>();
+
+        foreach (var paragraph in paragraphs)
+        {
+            var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+
+            // WordprocessingML paragraphs without an explicit style inherit from Normal by default
+            var effectiveStyleId = styleId ?? DocxStyles.Normal;
+
+            // Check all runs in a paragraph
+            var runSizes = paragraph.Descendants<Run>()
+                .Select(r => r.RunProperties?.FontSize?.Val?.Value)
+                .Where(v => v != null)
+                .Select(v => double.TryParse(v, out var parsed) ? parsed : (double?)null)
+                .Where(v => v != null)
+                .Select(v => UnitConverter.HalfPointsToPt((int)v!.Value))
+                .ToList();
+
+            if (runSizes.Count > 0)
+            {
+                fontSizes.AddRange(runSizes);
+            }
+            else
+            {
+                var fromStyle = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+                if (fromStyle != null)
+                {
+                    fontSizes.Add(UnitConverter.HalfPointsToPt((int)fromStyle));
+                }
+            }
+        }
+
+        return fontSizes;
+    }
+
+    private List<OpenXmlElement> GetElementsInScope(
+        Body body,
+        string? afterSectionTitle,
+        string? beforeSectionTitle)
+    {
+        var result = new List<OpenXmlElement>();
+        var inScope = afterSectionTitle == null;
+
+        foreach (var element in body.ChildElements)
+        {
+            if (element is Paragraph p)
+            {
+                var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                var text = p.InnerText.Trim();
+
+                if (!inScope && DocxStyles.Level1Headings.Contains(styleId) && text == afterSectionTitle)
+                {
+                    inScope = true;
+
+                    continue;
+                }
+
+                if (inScope && beforeSectionTitle != null && DocxStyles.Level1Headings.Contains(styleId)
+                    && (text == beforeSectionTitle || text.StartsWith(beforeSectionTitle + " ")))
+                {
+                    break;
+                }
+            }
+
+            if (inScope)
+            {
+                result.Add(element);
+            }
+        }
+
+        return result;
     }
 }

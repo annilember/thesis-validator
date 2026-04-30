@@ -5,5 +5,6 @@ public enum ERuleTarget
     Page,
     Paragraph,
     Document,
-    Section
+    Section,
+    Table
 }
