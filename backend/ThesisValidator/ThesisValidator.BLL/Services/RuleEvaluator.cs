@@ -9,6 +9,15 @@ namespace ThesisValidator.BLL.Services;
 
 public class RuleEvaluator : IRuleEvaluator
 {
+    public ValidationIssue EvaluateDisabled(ValidationRule rule) =>
+        ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegel pole sisse lülitatud");
+
+    public ValidationIssue EvaluateUnknownRuleType(ValidationRule rule) =>
+        ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Tundmatu reegli tüüp");
+
+    public ValidationIssue EvaluateUnknownRule(ValidationRule rule) =>
+        ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli kontrollmehhanism on puudu");
+
     public ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues)
     {
         if (actualValues == null || actualValues.Count == 0)
@@ -33,34 +42,59 @@ public class RuleEvaluator : IRuleEvaluator
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }
 
-    public ValidationIssue EvaluateBoolean(BooleanRule rule, bool actualValue)
+    public ValidationIssue EvaluateBoolean(BooleanRule rule, bool? actualValue)
     {
+        if (actualValue == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
+        }
+
         return Evaluate(rule, actualValue == rule.ExpectedValue);
     }
 
-    public ValidationIssue EvaluateEnum(EnumRule rule, List<string> actualValues)
+    public ValidationIssue EvaluateEnum(EnumRule rule, List<string>? actualValues)
     {
+        if (actualValues == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
+        }
+
         var allMatch = actualValues.All(v => rule.AllowedValues.Contains(v));
 
         return Evaluate(rule, allMatch);
     }
 
-    public ValidationIssue EvaluateRegex(RegexRule rule, List<string> actualValues)
+    public ValidationIssue EvaluateRegex(RegexRule rule, List<string>? actualValues, string? reason = null)
     {
+        if (actualValues == null || actualValues.Count == 0)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, reason ?? "Ühtegi lõiku ei leitud");
+        }
+
         var allMatch = actualValues.All(v => Regex.IsMatch(v, rule.Pattern));
 
         return Evaluate(rule, allMatch);
     }
 
-    public ValidationIssue EvaluateCount(CountRule rule, int actualCount)
+    public ValidationIssue EvaluateCount(CountRule rule, int? actualCount)
     {
+        if (actualCount == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
+        }
+
         var countIsInBounds = actualCount >= rule.MinValue && (rule.MaxValue == null || actualCount <= rule.MaxValue);
 
         return Evaluate(rule, countIsInBounds);
     }
 
-    public ValidationIssue EvaluateOrder(OrderRule rule, List<string> actualOrder)
+    public ValidationIssue EvaluateOrder(OrderRule rule, List<string>? actualOrder)
     {
+        if (actualOrder == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
+        }
+
         if (rule.OrderType == EOrderType.Fixed)
         {
             if (rule.ExpectedOrder == null)
@@ -87,11 +121,25 @@ public class RuleEvaluator : IRuleEvaluator
         return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli tüüp pole toetatud");
     }
 
-    public ValidationIssue EvaluateCrossReference(CrossReferenceRule rule, List<string> terms, string bodyText)
+    public ValidationIssue EvaluateCrossReference(
+        CrossReferenceRule rule,
+        List<string>? terms,
+        string? bodyText,
+        string? reason = null)
     {
-        if (terms.Count == 0)
+        if (reason != null)
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Lühendite sõnastik on tühi");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, reason);
+        }
+
+        if (terms == null || terms.Count == 0)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Kontrollitav loend on tühi");
+        }
+
+        if (bodyText == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Dokumendi sisu kättesaamine ebaõnnestus");
         }
 
         var allFound = terms.All(term => bodyText.Contains(term, StringComparison.OrdinalIgnoreCase));
@@ -104,21 +152,19 @@ public class RuleEvaluator : IRuleEvaluator
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
     }
 
-    public ValidationIssue EvaluateLanguage(LanguageRule rule, ESupportedLanguage? detectedLanguage)
+    public ValidationIssue EvaluateLanguage(
+        LanguageRule rule,
+        List<ESupportedLanguage?>? detectedLanguages,
+        string? reason = null)
     {
-        if (detectedLanguage == null)
+        if (reason != null)
         {
-            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Keelt ei õnnestunud tuvastada");
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, reason);
         }
 
-        return Evaluate(rule, detectedLanguage == rule.ExpectedLanguage);
-    }
+        var validLanguages = detectedLanguages?.Where(l => l != null).ToList();
 
-    public ValidationIssue EvaluateLanguage(LanguageRule rule, List<ESupportedLanguage?> detectedLanguages)
-    {
-        var validLanguages = detectedLanguages.Where(l => l != null).ToList();
-
-        if (validLanguages.Count == 0)
+        if (validLanguages == null || validLanguages.Count == 0)
         {
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Keelt ei õnnestunud tuvastada");
         }

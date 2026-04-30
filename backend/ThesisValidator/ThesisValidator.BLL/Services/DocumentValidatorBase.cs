@@ -29,10 +29,9 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
 
         foreach (var rule in rules)
         {
-            // TODO: tõsta RuleEvaluator sisse!
             var issue = rule.Enabled
                 ? await ValidateRuleAsync(document, rawStream, rule)
-                : ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegel pole sisse lülitatud");
+                : RuleEvaluator.EvaluateDisabled(rule);
 
             issues.Add(issue);
         }
@@ -52,10 +51,7 @@ public abstract class DocumentValidatorBase<TDocument> : IDocumentValidator
             OrderRule order => ValidateOrderRuleAsync(document, order),
             CrossReferenceRule crossRef => ValidateCrossReferenceRuleAsync(document, crossRef),
             LanguageRule language => ValidateLanguageRuleAsync(document, language),
-            _ => Task.FromResult(ValidationIssue.CreateSkipped(
-                rule.RuleId,
-                rule.Message,
-                "Reegli kontrollmehhanism on puudu"))
+            _ => Task.FromResult(RuleEvaluator.EvaluateUnknownRuleType(rule))
         };
     }
 
