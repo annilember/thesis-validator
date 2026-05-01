@@ -37,24 +37,36 @@ public class RuleEvaluator : IRuleEvaluator
         var distinctFailed = failedValues.Distinct().ToList();
         var unit = rule.Unit.ToString().ToLower();
         var failedStr = string.Join(", ", distinctFailed.Select(v => $"{v:F2}{unit}"));
-        var details = $"Leitud {failedValues.Count} viga ({distinctFailed.Count} erinevat väärtust: {failedStr}), oodatav: {rule.ExpectedValue}{unit}";
+        var details =
+            $"Leitud {failedValues.Count} viga ({distinctFailed.Count} erinevat väärtust: {failedStr}), oodatav: {rule.ExpectedValue}{unit}";
 
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }
 
-    public ValidationIssue EvaluateBoolean(BooleanRule rule, bool? actualValue)
+    public ValidationIssue EvaluateBoolean(BooleanRule rule, List<bool>? actualValues)
     {
-        if (actualValue == null)
+        if (actualValues == null || actualValues.Count == 0)
         {
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
-        return Evaluate(rule, actualValue == rule.ExpectedValue);
+        var violations = actualValues.Count(v => v != rule.ExpectedValue);
+
+        if (violations == 0)
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        return ValidationIssue.CreateFailed(
+            rule.RuleId,
+            rule.Message,
+            rule.Severity,
+            $"Leitud {violations} viga");
     }
 
     public ValidationIssue EvaluateEnum(EnumRule rule, List<string>? actualValues)
     {
-        if (actualValues == null)
+        if (actualValues == null || actualValues.Count == 0)
         {
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
@@ -90,7 +102,7 @@ public class RuleEvaluator : IRuleEvaluator
 
     public ValidationIssue EvaluateOrder(OrderRule rule, List<string>? actualOrder)
     {
-        if (actualOrder == null)
+        if (actualOrder == null || actualOrder.Count == 0)
         {
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }

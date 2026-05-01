@@ -226,7 +226,10 @@
       "description": "I taseme pealkiri on rasvane",
       "message": "I taseme pealkiri peab olema rasvane",
       "styleFilters": [
-        "Heading1"
+        "Heading1",
+        "Heading",
+        "Heading_unnumber",
+        "Headingunnumber"
       ]
     },
     {

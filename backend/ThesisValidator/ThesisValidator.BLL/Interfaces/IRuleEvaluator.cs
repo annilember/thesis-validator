@@ -15,7 +15,7 @@ public interface IRuleEvaluator
 
     ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues);
 
-    ValidationIssue EvaluateBoolean(BooleanRule rule, bool? actualValue);
+    ValidationIssue EvaluateBoolean(BooleanRule rule, List<bool>? actualValues);
 
     ValidationIssue EvaluateEnum(EnumRule rule, List<string>? actualValues);
 

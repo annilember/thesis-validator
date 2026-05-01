@@ -133,12 +133,12 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         return fontSizes;
     }
 
-    public bool? GetParagraphBold(WordprocessingDocument document, List<string>? styleFilters)
+    public List<bool> GetParagraphBoldValues(WordprocessingDocument document, List<string>? styleFilters)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
         {
-            return null;
+            return [];
         }
 
         var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
@@ -150,27 +150,44 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
                     p.ParagraphProperties?.ParagraphStyleId?.Val?.Value ?? string.Empty));
         }
 
+        var results = new List<bool>();
+
         foreach (var paragraph in paragraphs)
         {
             var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
-            var isBoldFromRun = paragraph.Descendants<Run>()
-                .Any(r => r.RunProperties?.Bold != null);
+            var contentRuns = paragraph.Descendants<Run>()
+                .Where(r => !string.IsNullOrEmpty(r.InnerText))
+                .Where(r => !r.Descendants<FieldChar>().Any())
+                .Where(r => !r.Descendants<FieldCode>().Any())
+                .ToList();
 
-            var isBoldFromParagraphMark = paragraph.ParagraphProperties?
-                .ParagraphMarkRunProperties?.GetFirstChild<Bold>() != null;
+            bool isBold;
 
-            var isBoldFromStyle = StyleResolver.ResolveBold(document, styleId) ?? false;
-
-            var isBold = isBoldFromRun || isBoldFromParagraphMark || isBoldFromStyle;
-
-            if (!isBold)
+            if (contentRuns.Count > 0)
             {
-                return false;
+                var isBoldFromStyle = StyleResolver.ResolveBold(document, styleId) ?? false;
+
+                isBold = contentRuns.All(r => // All runs need to be bold
+                    r.RunProperties?.Bold == null
+                        ? isBoldFromStyle
+                        : r.RunProperties.Bold.Val?.Value != false);
             }
+            else
+            {
+                var isBoldFromParagraphMark = paragraph.ParagraphProperties?
+                                                  .ParagraphMarkRunProperties?.GetFirstChild<Bold>() is Bold bold &&
+                                              bold.Val?.Value != false;
+
+                var isBoldFromStyle = StyleResolver.ResolveBold(document, styleId) ?? false;
+
+                isBold = isBoldFromParagraphMark || isBoldFromStyle;
+            }
+
+            results.Add(isBold);
         }
 
-        return true;
+        return results;
     }
 
     public List<string> GetParagraphAlignments(WordprocessingDocument document, List<string>? styleFilters)
@@ -416,14 +433,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             // Do not check run level for Normal text
             if (effectiveStyleId != DocxStyles.Normal)
             {
-                foreach (var run in paragraph.Descendants<Run>())
-                {
-                    _logger.LogDebug("Style: {Style}, Run text: '{Text}', FontSize: {Size}",
-                        effectiveStyleId,
-                        run.InnerText,
-                        run.RunProperties?.FontSize?.Val?.Value);
-                }
-
                 var runSizes = paragraph.Descendants<Run>()
                     .Where(r => !string.IsNullOrEmpty(r.InnerText))
                     .Where(r => !r.Descendants<FieldChar>().Any())

@@ -74,14 +74,14 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
     protected override async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document,
         BooleanRule rule)
     {
-        var actualValue = (rule.Target, rule.Property) switch
+        var actualValues = (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Paragraph, ERuleProperty.Bold) => _docxParsingService.GetParagraphBold(document,
+            (ERuleTarget.Paragraph, ERuleProperty.Bold) => _docxParsingService.GetParagraphBoldValues(document,
                 rule.StyleFilters),
             _ => null
         };
 
-        return RuleEvaluator.EvaluateBoolean(rule, actualValue);
+        return RuleEvaluator.EvaluateBoolean(rule, actualValues);
     }
 
     protected override Task<ValidationIssue> ValidateEnumRuleAsync(WordprocessingDocument document, EnumRule rule)
