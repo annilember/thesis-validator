@@ -35,7 +35,18 @@ public static class StyleResolver
     {
         if (styleId == null)
         {
-            return null;
+            // Try Normal style first
+            var normalAlignment = ResolveAlignment(document, DocxStyles.Normal);
+            if (normalAlignment != null)
+            {
+                return normalAlignment;
+            }
+
+            // Fallback to DocDefaults
+            var docDefaults = document.MainDocumentPart?.StyleDefinitionsPart?.Styles?.DocDefaults;
+            var defaultAlignment = docDefaults?.ParagraphPropertiesDefault?
+                .ParagraphPropertiesBaseStyle?.Justification?.Val?.Value;
+            return defaultAlignment != null ? ValueMapper.MapAlignment(defaultAlignment) : null;
         }
 
         var style = GetStyle(document, styleId);

@@ -88,8 +88,12 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
     {
         var actualValues = (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Paragraph, ERuleProperty.Alignment) => _docxParsingService.GetParagraphAlignments(document,
-                rule.StyleFilters),
+            (ERuleTarget.Paragraph, ERuleProperty.Alignment) => _docxParsingService.GetParagraphAlignments(
+                document,
+                rule.StyleFilters,
+                rule.ExcludeFontFilters,
+                rule.AfterSectionTitle,
+                rule.BeforeSectionTitle),
             _ => null
         };
 

@@ -71,9 +71,20 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
-        var allMatch = actualValues.All(v => rule.AllowedValues.Contains(v));
+        var violations = actualValues.Where(v => !rule.AllowedValues.Contains(v)).ToList();
 
-        return Evaluate(rule, allMatch);
+        if (violations.Count == 0)
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        var distinctViolations = violations.Distinct().ToList();
+        var violationsStr = string.Join(", ", distinctViolations);
+        var expectedStr = string.Join(", ", rule.AllowedValues);
+        var details =
+            $"Leitud {violations.Count} viga ({distinctViolations.Count} erinevat väärtust: {violationsStr}), oodatav: {expectedStr}";
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }
 
     public ValidationIssue EvaluateRegex(RegexRule rule, List<string>? actualValues, string? reason = null)

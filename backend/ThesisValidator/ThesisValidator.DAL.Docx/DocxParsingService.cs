@@ -190,7 +190,12 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         return results;
     }
 
-    public List<string> GetParagraphAlignments(WordprocessingDocument document, List<string>? styleFilters)
+    public List<string> GetParagraphAlignments(
+        WordprocessingDocument document,
+        List<string>? styleFilters,
+        List<string>? excludeFontFilters,
+        string? afterSectionTitle = null,
+        string? beforeSectionTitle = null)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
@@ -198,24 +203,62 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return [];
         }
 
-        var paragraphs = body.Descendants<Paragraph>().AsEnumerable();
+        IEnumerable<Paragraph> paragraphs;
 
-        if (styleFilters != null && styleFilters.Count > 0)
+        if (afterSectionTitle != null || beforeSectionTitle != null)
         {
-            paragraphs = paragraphs.Where(p =>
-                styleFilters.Contains(
-                    p.ParagraphProperties?.ParagraphStyleId?.Val?.Value ?? string.Empty));
+            var elements = GetElementsInScope(body, afterSectionTitle, beforeSectionTitle);
+            paragraphs = elements.OfType<Paragraph>();
         }
+        else
+        {
+            paragraphs = body.Descendants<Paragraph>();
+        }
+
+        paragraphs = paragraphs.Where(p =>
+        {
+            var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+
+            if (styleFilters != null && styleFilters.Count > 0)
+            {
+                var matchesStyle = styleFilters.Contains(styleId ?? string.Empty) ||
+                                   (styleId == null && styleFilters.Contains(DocxStyles.Normal));
+                if (!matchesStyle)
+                {
+                    return false;
+                }
+            }
+
+            if (excludeFontFilters != null && excludeFontFilters.Count > 0)
+            {
+                var fontFromRun = p.Descendants<Run>()
+                    .Select(r => r.RunProperties?.RunFonts?.Ascii?.Value)
+                    .FirstOrDefault(f => f != null);
+                var fontFromStyle = StyleResolver.ResolveFont(document, styleId);
+                var font = fontFromRun ?? fontFromStyle;
+                if (font != null && excludeFontFilters.Contains(font))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        });
 
         var alignments = new List<string>();
 
         foreach (var paragraph in paragraphs)
         {
+            if (string.IsNullOrWhiteSpace(paragraph.InnerText))
+            {
+                continue;
+            }
+
             var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
             var alignment = paragraph.ParagraphProperties?.Justification?.Val?.Value is { } val
                 ? ValueMapper.MapAlignment(val)
-                : StyleResolver.ResolveAlignment(document, styleId);
+                : StyleResolver.ResolveAlignment(document, styleId) ?? "left";
 
             if (alignment != null)
             {

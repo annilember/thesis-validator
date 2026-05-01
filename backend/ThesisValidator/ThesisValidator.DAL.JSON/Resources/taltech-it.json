@@ -239,6 +239,7 @@
       "enabled": true,
       "target": "paragraph",
       "property": "alignment",
+      "afterSectionTitle": "Autorideklaratsioon",
       "allowedValues": [
         "justified"
       ],
@@ -247,7 +248,8 @@
       "message": "Põhiteksti joondus peab olema rööpjoondus",
       "styleFilters": [
         "Normal"
-      ]
+      ],
+      "excludeFontFilters": ["Courier New", "Consolas"]
     },
     {
       "ruleId": "C-001",
