@@ -309,12 +309,9 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             if (element is Paragraph paragraph)
             {
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
-                var text = paragraph.InnerText.Trim();
 
                 if (DocxStyles.SubHeadings.Contains(styleId))
                 {
-                    _logger.LogDebug("SubHeading found: '{Text}', Style: {Style}, PrevCount: {Count}",
-                        text, styleId, currentCount);
                     if (inSubsection)
                     {
                         counts.Add(currentCount);
@@ -325,8 +322,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
                 }
                 else if (DocxStyles.Level1Headings.Contains(styleId))
                 {
-                    _logger.LogDebug("Heading1 found: '{Text}', Style: {Style}, PrevCount: {Count}",
-                        text, styleId, currentCount);
                     if (inSubsection)
                     {
                         counts.Add(currentCount);

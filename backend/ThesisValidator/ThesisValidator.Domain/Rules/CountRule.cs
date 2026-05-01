@@ -9,4 +9,6 @@ public class CountRule : ValidationRule
     public int MinValue { get; set; }
 
     public int? MaxValue { get; set; }
+
+    public EUnit? Unit { get; set; }
 }

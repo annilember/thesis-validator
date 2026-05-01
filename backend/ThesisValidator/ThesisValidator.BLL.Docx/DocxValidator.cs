@@ -129,7 +129,8 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
             (ERuleTarget.Section, ERuleProperty.ParagraphCount) =>
                 RuleEvaluator.EvaluateCount(rule, _docxParsingService.GetParagraphCountsPerSubsection(document)),
             (ERuleTarget.Document, ERuleProperty.PageCount) =>
-                RuleEvaluator.EvaluateCount(rule, _renderingService.GetMainContentPageCount(rawStream, "Sissejuhatus", "Kokkuvõte")),
+                RuleEvaluator.EvaluateCount(rule, _renderingService.GetPageCount(
+                    rawStream, rule.StartSectionTitle, rule.EndSectionTitle)),
             _ => RuleEvaluator.EvaluateUnknownRule(rule)
         };
 

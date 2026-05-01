@@ -108,7 +108,18 @@ public class RuleEvaluator : IRuleEvaluator
 
         var countIsInBounds = actualCount >= rule.MinValue && (rule.MaxValue == null || actualCount <= rule.MaxValue);
 
-        return Evaluate(rule, countIsInBounds);
+        if (countIsInBounds)
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        var expected = rule.MaxValue != null
+            ? $"{rule.MinValue}-{rule.MaxValue}"
+            : $"vähemalt {rule.MinValue}";
+        var unitStr = rule.Unit != null ? $" {rule.Unit.Value.ToDisplayString()}" : "";
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+            $"Leitud {actualCount}{unitStr}, oodatav: {expected}{unitStr}");
     }
 
     public ValidationIssue EvaluateCount(CountRule rule, List<int>? actualCounts)

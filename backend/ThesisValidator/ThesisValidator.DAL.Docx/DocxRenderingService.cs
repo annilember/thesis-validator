@@ -7,7 +7,7 @@ namespace ThesisValidator.DAL.Docx;
 
 public class DocxRenderingService : IDocumentRenderingService
 {
-    public int GetMainContentPageCount(Stream document, string? startTitle, string? endTitle)
+    public int GetPageCount(Stream document, string? startTitle, string? endTitle)
     {
         document.Position = 0;
         using var wordDocument = new WordDocument(document, FormatType.Docx);

@@ -313,9 +313,12 @@
       "enabled": true,
       "target": "document",
       "property": "pageCount",
+      "startSectionTitle": "Sissejuhatus",
+      "endSectionTitle": "Kokkuvõte",
       "thesisType": "bachelor",
       "minValue": 25,
       "maxValue": 35,
+      "unit": "page",
       "severity": "warning",
       "description": "Bakalaureusetöö põhiosa maht on 25-35 lk",
       "message": "Bakalaureusetöö põhiosa peab üldjuhul olema 25-35 ll"
@@ -327,12 +330,15 @@
       "enabled": true,
       "target": "document",
       "property": "pageCount",
+      "startSectionTitle": "Sissejuhatus",
+      "endSectionTitle": "Kokkuvõte",
       "thesisType": "master",
       "minValue": 30,
       "maxValue": 60,
+      "unit": "page",
       "severity": "warning",
-      "description": "Magistritöö põhiosa maht on 40-60 lk",
-      "message": "Magistritöö põhiosa peab üldjuhul olema 40-60 lk"
+      "description": "Magistritöö põhiosa maht on 30-60 lk",
+      "message": "Magistritöö põhiosa peab üldjuhul olema 30-60 lk"
     },
     {
       "ruleId": "R-001",
