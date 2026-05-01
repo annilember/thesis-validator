@@ -124,16 +124,16 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         Stream rawStream,
         CountRule rule)
     {
-        var actualCount = (rule.Target, rule.Property) switch
+        var result = (rule.Target, rule.Property) switch
         {
             (ERuleTarget.Section, ERuleProperty.ParagraphCount) =>
-                _docxParsingService.GetMinParagraphCountInSubsection(document),
+                RuleEvaluator.EvaluateCount(rule, _docxParsingService.GetParagraphCountsPerSubsection(document)),
             (ERuleTarget.Document, ERuleProperty.PageCount) =>
-                _renderingService.GetMainContentPageCount(rawStream, "Sissejuhatus", "Kokkuvõte"),
-            _ => (int?)null
+                RuleEvaluator.EvaluateCount(rule, _renderingService.GetMainContentPageCount(rawStream, "Sissejuhatus", "Kokkuvõte")),
+            _ => RuleEvaluator.EvaluateUnknownRule(rule)
         };
 
-        return Task.FromResult(RuleEvaluator.EvaluateCount(rule, actualCount));
+        return Task.FromResult(result);
     }
 
     protected override Task<ValidationIssue> ValidateOrderRuleAsync(WordprocessingDocument document, OrderRule rule)

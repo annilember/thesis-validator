@@ -111,6 +111,24 @@ public class RuleEvaluator : IRuleEvaluator
         return Evaluate(rule, countIsInBounds);
     }
 
+    public ValidationIssue EvaluateCount(CountRule rule, List<int>? actualCounts)
+    {
+        if (actualCounts == null || actualCounts.Count == 0)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
+        }
+
+        var violations = actualCounts.Count(c => c < rule.MinValue);
+
+        if (violations == 0)
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+            $"Leitud {violations} alampeatükki, milles on vähem kui {rule.MinValue} lõiku");
+    }
+
     public ValidationIssue EvaluateOrder(OrderRule rule, List<string>? actualOrder)
     {
         if (actualOrder == null || actualOrder.Count == 0)

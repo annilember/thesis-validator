@@ -292,40 +292,55 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             .ToList();
     }
 
-    public int GetMinParagraphCountInSubsection(WordprocessingDocument document)
+    public List<int> GetParagraphCountsPerSubsection(WordprocessingDocument document)
     {
-        //TODO: Hetkel tagastab kõige väiksema lõikude arvu kõigis alampeatükkides.
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
         {
-            return 0;
+            return [];
         }
 
-        var minCount = int.MaxValue;
+        var counts = new List<int>();
         var currentCount = 0;
         var inSubsection = false;
 
-        var elements = body.ChildElements.ToList();
-
-        foreach (var element in elements)
+        foreach (var element in body.ChildElements)
         {
             if (element is Paragraph paragraph)
             {
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                var text = paragraph.InnerText.Trim();
 
                 if (DocxStyles.SubHeadings.Contains(styleId))
                 {
+                    _logger.LogDebug("SubHeading found: '{Text}', Style: {Style}, PrevCount: {Count}",
+                        text, styleId, currentCount);
                     if (inSubsection)
                     {
-                        minCount = Math.Min(minCount, currentCount);
+                        counts.Add(currentCount);
                     }
 
                     currentCount = 0;
                     inSubsection = true;
                 }
+                else if (DocxStyles.Level1Headings.Contains(styleId))
+                {
+                    _logger.LogDebug("Heading1 found: '{Text}', Style: {Style}, PrevCount: {Count}",
+                        text, styleId, currentCount);
+                    if (inSubsection)
+                    {
+                        counts.Add(currentCount);
+                    }
+
+                    currentCount = 0;
+                    inSubsection = false;
+                }
                 else if (inSubsection && (styleId == DocxStyles.Normal || styleId == null))
                 {
-                    currentCount++;
+                    if (!string.IsNullOrWhiteSpace(paragraph.InnerText))
+                    {
+                        currentCount++;
+                    }
                 }
             }
             else if (inSubsection && element is Table)
@@ -336,10 +351,10 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
         if (inSubsection)
         {
-            minCount = Math.Min(minCount, currentCount);
+            counts.Add(currentCount);
         }
 
-        return minCount == int.MaxValue ? 0 : minCount;
+        return counts;
     }
 
     public List<string> GetSectionTitles(

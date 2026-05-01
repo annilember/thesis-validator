@@ -23,6 +23,8 @@ public interface IRuleEvaluator
 
     ValidationIssue EvaluateCount(CountRule rule, int? actualCount);
 
+    ValidationIssue EvaluateCount(CountRule rule, List<int>? actualCounts);
+
     ValidationIssue EvaluateOrder(OrderRule rule, List<string>? actualOrder);
 
     ValidationIssue EvaluateCrossReference(
