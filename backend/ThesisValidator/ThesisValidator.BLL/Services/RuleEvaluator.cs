@@ -96,7 +96,9 @@ public class RuleEvaluator : IRuleEvaluator
 
         var allMatch = actualValues.All(v => Regex.IsMatch(v, rule.Pattern));
 
-        return Evaluate(rule, allMatch);
+        return allMatch
+            ? ValidationIssue.CreatePassed(rule.RuleId, rule.Description)
+            : ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
     }
 
     public ValidationIssue EvaluateCount(CountRule rule, int? actualCount)
@@ -304,16 +306,20 @@ public class RuleEvaluator : IRuleEvaluator
 
         if (!allSame)
         {
-            return ValidationIssue.CreateFailed(rule.RuleId, "Sektsioon sisaldab mitmes keeles teksti", rule.Severity);
+            var detectedStr = string.Join(", ", validLanguages
+                .Distinct()
+                .Select(l => l?.ToString().ToLower() ?? "tundmatu"));
+            return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+                $"Tuvastati mitu erinevat keelt: {detectedStr}");
         }
 
-        return Evaluate(rule, validLanguages.First() == rule.ExpectedLanguage);
-    }
+        var detectedLanguage = validLanguages.First();
+        if (detectedLanguage != rule.ExpectedLanguage)
+        {
+            return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+                $"Tuvastatud keel: {detectedLanguage?.ToString().ToLower()}, oodatav: {rule.ExpectedLanguage.ToString().ToLower()}");
+        }
 
-    private static ValidationIssue Evaluate(ValidationRule rule, bool passed)
-    {
-        return passed
-            ? ValidationIssue.CreatePassed(rule.RuleId, rule.Description)
-            : ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
     }
 }
