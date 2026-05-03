@@ -147,30 +147,101 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
-        if (rule.OrderType == EOrderType.Fixed)
+        if (rule.OrderType != EOrderType.Fixed)
         {
-            if (rule.ExpectedOrder == null)
-            {
-                return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Oodatav järjekord puudub");
-            }
-
-            var expectedInActual = rule.ExpectedOrder
-                .Where(actualOrder.Contains)
-                .ToList();
-
-            var actualFiltered = actualOrder
-                .Where(a => rule.ExpectedOrder.Contains(a))
-                .ToList();
-
-            if (expectedInActual.SequenceEqual(actualFiltered))
-            {
-                return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
-            }
-
-            return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli tüüp pole toetatud");
         }
 
-        return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli tüüp pole toetatud");
+        if (rule.ExpectedOrder == null)
+        {
+            return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Oodatav järjekord pole defineeritud");
+        }
+
+        bool Matches(string actual, string expected) =>
+            actual == expected || actual.StartsWith(expected + " ");
+
+        var missingRequired = rule.ExpectedOrder
+            .Where(e => rule.OptionalOrderItems == null || !rule.OptionalOrderItems.Any(o => Matches(e, o)))
+            .Where(e => !actualOrder.Any(a => Matches(a, e)))
+            .ToList();
+
+        if (missingRequired.Count > 0)
+        {
+            return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+                $"Puuduvad kohustuslikud osad: {string.Join(", ", missingRequired)}");
+        }
+
+        if (rule.AllowUnknownBetween != null)
+        {
+            var startIndex = actualOrder.FindIndex(a => Matches(a, rule.AllowUnknownBetween[0]));
+            var endIndex = actualOrder.FindIndex(a => Matches(a, rule.AllowUnknownBetween[1]));
+
+            var illegalUnknowns = actualOrder
+                .Select((a, i) => (a, i))
+                .Where(x => !rule.ExpectedOrder.Any(e => Matches(x.a, e)))
+                .Where(x => !(x.i > startIndex && x.i < endIndex))
+                .Select(x => x.a)
+                .ToList();
+
+            if (illegalUnknowns.Count > 0)
+            {
+                var allowStart = rule.AllowUnknownBetween[0];
+                var unknownInScope = actualOrder
+                    .Where(a => !rule.ExpectedOrder.Any(e => Matches(a, e)))
+                    .ToList();
+                var expectedWithUnknowns = new List<string>();
+
+                foreach (var item in rule.ExpectedOrder)
+                {
+                    var actualMatches = actualOrder
+                        .Where(a => Matches(a, item))
+                        .ToList();
+
+                    if (actualMatches.Count > 0)
+                    {
+                        expectedWithUnknowns.AddRange(actualMatches);
+                    }
+
+                    if (Matches(item, allowStart))
+                    {
+                        expectedWithUnknowns.AddRange(unknownInScope);
+                    }
+                }
+
+                return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+                    $"Oodatud osade järjekord: {string.Join(" → ", expectedWithUnknowns)}");
+            }
+        }
+
+        var actualFiltered = actualOrder
+            .Where(a => rule.ExpectedOrder.Any(e => Matches(a, e)))
+            .ToList();
+
+        var expectedFiltered = rule.ExpectedOrder
+            .SelectMany(e => actualOrder
+                .Where(a => Matches(a, e))
+                .Where(a =>
+                {
+                    var hasExactMatch = rule.ExpectedOrder.Any(exact => exact != e && exact == a);
+                    if (hasExactMatch)
+                    {
+                        return e == a;
+                    }
+
+                    return true;
+                }))
+            .ToList();
+
+        if (expectedFiltered.SequenceEqual(actualFiltered))
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        var expectedStr = string.Join(" → ", expectedFiltered);
+        var actualStr = string.Join(" → ", actualFiltered);
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+            $"Leitud järjekord: {actualStr}, oodatav: {expectedStr}");
     }
 
     public ValidationIssue EvaluateCrossReference(

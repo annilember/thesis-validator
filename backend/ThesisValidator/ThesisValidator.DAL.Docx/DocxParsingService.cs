@@ -363,12 +363,24 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return [];
         }
 
-        var allTitles = body.Descendants<Paragraph>()
+        var allTitles = new List<string>();
+
+        if (startFromHeading == null)
+        {
+            var firstNonEmpty = body.ChildElements
+                .FirstOrDefault(e => e is Table ||
+                                     (e is Paragraph p && !string.IsNullOrWhiteSpace(p.InnerText)));
+            if (firstNonEmpty is Table)
+            {
+                allTitles.Add("Tiitelleht");
+            }
+        }
+
+        allTitles.AddRange(body.Descendants<Paragraph>()
             .Where(p => DocxStyles.Level1Headings.Contains(
                 p.ParagraphProperties?.ParagraphStyleId?.Val?.Value))
             .Select(p => p.InnerText.Trim())
-            .Where(t => !string.IsNullOrEmpty(t))
-            .ToList();
+            .Where(t => !string.IsNullOrEmpty(t)));
 
         var startIndex = startFromHeading != null
             ? allTitles.IndexOf(startFromHeading) + 1

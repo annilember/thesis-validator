@@ -271,15 +271,30 @@
       "target": "document",
       "orderType": "fixed",
       "expectedOrder": [
+        "Tiitelleht",
+        "Autorideklaratsioon",
         "Lühikokkuvõte",
+        "Abstract",
+        "Lühendite ja mõistete sõnastik",
         "Sisukord",
+        "Jooniste loetelu",
+        "Tabelite loetelu",
         "Sissejuhatus",
         "Kokkuvõte",
-        "Kasutatud kirjandus"
+        "Kasutatud kirjandus",
+        "Lisa 1 – Lihtlitsents lõputöö reprodutseerimiseks ja lõputöö üldsusele kättesaadavaks tegemiseks",
+        "Lisa"
       ],
+      "optionalOrderItems": [
+        "Lühendite ja mõistete sõnastik",
+        "Jooniste loetelu",
+        "Tabelite loetelu",
+        "Lisa"
+      ],
+      "allowUnknownBetween": ["Sissejuhatus", "Kokkuvõte"],
       "severity": "error",
-      "description": "Lõputöö osad on järjekorras: Lühikokkuvõte, Sisukord, Sissejuhatus, Kokkuvõte, Kasutatud kirjandus",
-      "message": "Lõputöö osad ei ole õiges järjekorras (Lühikokkuvõte, Sisukord, Sissejuhatus, Kokkuvõte, Kasutatud kirjandus)"
+      "description": "Lõputöö osad on õiges järjekorras",
+      "message": "Lõputöö osad ei ole õiges järjekorras"
     },
     {
       "ruleId": "X-001",
