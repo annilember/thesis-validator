@@ -248,7 +248,8 @@ public class RuleEvaluator : IRuleEvaluator
         CrossReferenceRule rule,
         List<string>? terms,
         string? bodyText,
-        string? reason = null)
+        string? reason = null,
+        string? detailsLabel = null)
     {
         if (reason != null)
         {
@@ -265,14 +266,21 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Dokumendi sisu kättesaamine ebaõnnestus");
         }
 
-        var allFound = terms.All(term => bodyText.Contains(term, StringComparison.OrdinalIgnoreCase));
+        var violations = terms
+            .Where(term => !Regex.IsMatch(bodyText,
+                $@"(?<![a-zA-ZäöüõÄÖÜÕ0-9]){Regex.Escape(term)}(?![a-zA-ZäöüõÄÖÜÕ0-9])",
+                RegexOptions.IgnoreCase))
+            .ToList();
 
-        if (allFound)
+        if (violations.Count == 0)
         {
             return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
         }
 
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        var label = detailsLabel ?? "Tuvastatud veakohad";
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+            $"{label}: {string.Join(", ", violations)}");
     }
 
     public ValidationIssue EvaluateLanguage(

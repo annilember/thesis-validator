@@ -31,7 +31,8 @@ public interface IRuleEvaluator
         CrossReferenceRule rule,
         List<string>? terms,
         string? bodyText,
-        string? reason = null);
+        string? reason = null,
+        string? detailsLabel = null);
 
     ValidationIssue EvaluateLanguage(
         LanguageRule rule,

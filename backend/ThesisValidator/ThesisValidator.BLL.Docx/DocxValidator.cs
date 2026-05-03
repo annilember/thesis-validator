@@ -195,12 +195,12 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         if (string.IsNullOrEmpty(rule.SectionTitle))
         {
             return RuleEvaluator.EvaluateCrossReference(
-                rule, terms, bodyText, "Kontrollitava sektsiooni pealkiri puudub");
+                rule, terms, bodyText, reason: "Kontrollitava sektsiooni pealkiri puudub");
         }
 
         terms = _docxParsingService.GetGlossaryTerms(document, rule.SectionTitle);
-        bodyText = _docxParsingService.GetBodyText(document);
+        bodyText = _docxParsingService.GetBodyText(document, rule.AfterSectionTitle, rule.BeforeSectionTitle);
 
-        return RuleEvaluator.EvaluateCrossReference(rule, terms, bodyText);
+        return RuleEvaluator.EvaluateCrossReference(rule, terms, bodyText, detailsLabel: "Töö põhitekstist mitte leitud mõisted");
     }
 }

@@ -303,9 +303,11 @@
       "sectionTitle": "Lühendite ja mõistete sõnastik",
       "enabled": true,
       "target": "document",
+      "afterSectionTitle": "Sissejuhatus",
+      "beforeSectionTitle": "Kasutatud kirjandus",
       "referenceTarget": "bodyText",
       "severity": "error",
-      "description": "Lühendite sõnastiku terminid esinevad töö põhitekstis",
+      "description": "Lühendite ja mõistete sõnastiku terminid esinevad töö põhitekstis",
       "message": "Lühendite ja mõistete sõnastiku terminid peavad esinema töö põhitekstis"
     },
     {

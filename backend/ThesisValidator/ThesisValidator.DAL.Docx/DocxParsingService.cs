@@ -422,7 +422,10 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         return [];
     }
 
-    public string GetBodyText(WordprocessingDocument document)
+    public string GetBodyText(
+        WordprocessingDocument document,
+        string? afterSectionTitle = null,
+        string? beforeSectionTitle = null)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
@@ -430,9 +433,24 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return string.Empty;
         }
 
-        return string.Join(" ", body.Descendants<Paragraph>()
+        IEnumerable<OpenXmlElement> elements = afterSectionTitle != null || beforeSectionTitle != null
+            ? GetElementsInScope(body, afterSectionTitle, beforeSectionTitle)
+            : body.ChildElements;
+
+        return string.Join(" ", elements
+            .SelectMany(e => e switch
+            {
+                Paragraph p => [p],
+                Table t => t.Descendants<Paragraph>(),
+                _ => []
+            })
             .Where(p =>
             {
+                if (p.Ancestors<TableCell>().Any())
+                {
+                    return true;
+                }
+
                 var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
                 return styleId == DocxStyles.Normal || styleId == null;
             })

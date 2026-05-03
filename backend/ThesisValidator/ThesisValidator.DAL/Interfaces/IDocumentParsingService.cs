@@ -22,6 +22,6 @@ public interface IDocumentParsingService<in TDocument>
     List<int> GetParagraphCountsPerSubsection(TDocument document);
     List<string> GetSectionTitles(TDocument document, string? startFromHeading = null, string? endWithHeading = null);
     List<string> GetGlossaryTerms(TDocument document, string sectionTitle);
-    string GetBodyText(TDocument document);
+    string GetBodyText(TDocument document, string? afterSectionTitle = null, string? beforeSectionTitle = null);
     List<string> GetSectionParagraphs(TDocument document, string sectionTitle);
 }
