@@ -94,11 +94,17 @@ public class RuleEvaluator : IRuleEvaluator
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, reason ?? "Ühtegi lõiku ei leitud");
         }
 
-        var allMatch = actualValues.All(v => Regex.IsMatch(v, rule.Pattern));
+        var violations = actualValues
+            .Where(v => !Regex.IsMatch(v, rule.Pattern))
+            .ToList();
 
-        return allMatch
-            ? ValidationIssue.CreatePassed(rule.RuleId, rule.Description)
-            : ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity);
+        if (violations.Count == 0)
+        {
+            return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
+        }
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
+            $"Vale formaat leitud: {string.Join(", ", violations)}");
     }
 
     public ValidationIssue EvaluateCount(CountRule rule, int? actualCount)
