@@ -1,6 +1,6 @@
 {
   "templateId": "taltech-it",
-  "name": "TalTech IT-teaduskonna lõputöö vormistusjuhend",
+  "name": "TalTech IT-teaduskonna lõputööd",
   "version": "2025",
   "rules": [
     {
@@ -88,6 +88,10 @@
       "message": "Põhiteksti fondi suurus peab olema 12 pt",
       "styleFilters": [
         "Normal"
+      ],
+      "excludeFontFilters": [
+        "Courier New",
+        "Consolas"
       ]
     },
     {
@@ -212,7 +216,10 @@
       "severity": "error",
       "description": "Programmikoodi fondi suurus 10 pt",
       "message": "Programmikoodi teksti fondi suurus peab olema 10 pt",
-      "fontFilters": ["Courier New", "Consolas"]
+      "fontFilters": [
+        "Courier New",
+        "Consolas"
+      ]
     },
     {
       "ruleId": "B-001",
@@ -249,7 +256,10 @@
       "styleFilters": [
         "Normal"
       ],
-      "excludeFontFilters": ["Courier New", "Consolas"]
+      "excludeFontFilters": [
+        "Courier New",
+        "Consolas"
+      ]
     },
     {
       "ruleId": "C-001",
@@ -291,7 +301,10 @@
         "Tabelite loetelu",
         "Lisa"
       ],
-      "allowUnknownBetween": ["Sissejuhatus", "Kokkuvõte"],
+      "allowUnknownBetween": [
+        "Sissejuhatus",
+        "Kokkuvõte"
+      ],
       "severity": "error",
       "description": "Lõputöö osad on õiges järjekorras",
       "message": "Lõputöö osad ei ole õiges järjekorras"

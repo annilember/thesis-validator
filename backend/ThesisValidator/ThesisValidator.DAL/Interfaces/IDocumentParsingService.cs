@@ -10,15 +10,23 @@ public interface IDocumentParsingService<in TDocument>
     List<double> GetPageMarginLeft(TDocument document, EUnit ruleUnit);
     List<double> GetPageMarginRight(TDocument document, EUnit unit);
     List<double> GetPageMarginFooter(TDocument document, EUnit unit);
-    List<double> GetParagraphFontSizes(TDocument document, List<string>? styleFilters, List<string>? fontFilters);
+
+    List<double> GetParagraphFontSizes(
+        TDocument document,
+        List<string>? styleFilters,
+        List<string>? fontFilters,
+        List<string>? excludeFontFilters);
+
     List<double> GetTableCellFontSizes(TDocument document, string? afterSectionTitle, string? beforeSectionTitle);
     List<bool> GetParagraphBoldValues(TDocument document, List<string>? styleFilters);
+
     List<string> GetParagraphAlignments(
         TDocument document,
         List<string>? styleFilters,
         List<string>? excludeFontFilters,
         string? afterSectionTitle = null,
         string? beforeSectionTitle = null);
+
     List<string> GetParagraphTexts(TDocument document, List<string>? styleFilters);
     List<ItemCount> GetParagraphCountsPerSubsection(TDocument document);
     List<string> GetSectionTitles(TDocument document, string? startFromHeading = null, string? endWithHeading = null);

@@ -65,11 +65,13 @@ const onChanged = () => {
       </div>
     </div>
 
+    <!--
     <div class="space-y-1">
       <label class="text-sm text-gray-600">Võõrkeelne pealkiri</label>
       <input v-model="options.foreignTitle" @input="onChanged" type="text"
         placeholder="Sisesta töö ingliskeelne pealkiri"
         class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900" />
     </div>
+    -->
   </div>
 </template>

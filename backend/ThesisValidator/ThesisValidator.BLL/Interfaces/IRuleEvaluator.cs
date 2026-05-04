@@ -14,7 +14,7 @@ public interface IRuleEvaluator
 
     ValidationIssue EvaluateUnknownRule(ValidationRule rule);
 
-    ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues);
+    ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues, string? countContext);
 
     ValidationIssue EvaluateBoolean(BooleanRule rule, List<bool>? actualValues);
 

@@ -19,7 +19,7 @@ public class RuleEvaluator : IRuleEvaluator
     public ValidationIssue EvaluateUnknownRule(ValidationRule rule) =>
         ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Reegli kontrollmehhanism on puudu");
 
-    public ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues)
+    public ValidationIssue EvaluateNumeric(NumericRule rule, List<double>? actualValues, string? countContext)
     {
         if (actualValues == null || actualValues.Count == 0)
         {
@@ -38,8 +38,9 @@ public class RuleEvaluator : IRuleEvaluator
         var distinctFailed = failedValues.Distinct().ToList();
         var unit = rule.Unit.ToString().ToLower();
         var failedStr = string.Join(", ", distinctFailed.Select(v => $"{v:F2}{unit}"));
-        var details =
-            $"Leitud {failedValues.Count} viga ({distinctFailed.Count} erinevat väärtust: {failedStr}), oodatav: {rule.ExpectedValue}{unit}";
+        var details = countContext != null
+            ? $"Leitud {failedValues.Count} viga ({distinctFailed.Count} erinevat väärtust: {failedStr}), oodatav: {rule.ExpectedValue}{unit} ({countContext})"
+            : $"Leitud {failedValues.Count} viga ({distinctFailed.Count} erinevat väärtust: {failedStr}), oodatav: {rule.ExpectedValue}{unit}";
 
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }

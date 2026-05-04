@@ -64,11 +64,12 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
     public List<double> GetParagraphFontSizes(
         WordprocessingDocument document,
         List<string>? styleFilters,
-        List<string>? fontFilters)
+        List<string>? fontFilters,
+        List<string>? excludeFontFilters)
     {
         if (styleFilters != null && styleFilters.Count > 0)
         {
-            return GetFontSizesByStyle(document, styleFilters);
+            return GetFontSizesByStyle(document, styleFilters, excludeFontFilters);
         }
 
         if (fontFilters != null && fontFilters.Count > 0)
@@ -499,7 +500,10 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         return paragraphs;
     }
 
-    private List<double> GetFontSizesByStyle(WordprocessingDocument document, List<string> styleFilters)
+    private List<double> GetFontSizesByStyle(
+        WordprocessingDocument document,
+        List<string> styleFilters,
+        List<string>? excludeFontFilters)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
@@ -511,6 +515,11 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         paragraphs = paragraphs.Where(p =>
         {
             var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+            if (p.Ancestors<TableCell>().Any())
+            {
+                return false;
+            }
+
             return styleFilters.Contains(styleId ?? string.Empty) ||
                    (styleId == null && styleFilters.Contains(DocxStyles.Normal));
         });
@@ -524,31 +533,37 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             // WordprocessingML paragraphs without an explicit style inherit from Normal by default
             var effectiveStyleId = styleId ?? DocxStyles.Normal;
 
-            // Do not check run level for Normal text
-            if (effectiveStyleId != DocxStyles.Normal)
-            {
-                var runSizes = paragraph.Descendants<Run>()
-                    .Where(r => !string.IsNullOrEmpty(r.InnerText))
-                    .Where(r => !r.Descendants<FieldChar>().Any())
-                    .Where(r => !r.Descendants<FieldCode>().Any())
-                    .Select(r => r.RunProperties?.FontSize?.Val?.Value)
-                    .Where(v => v != null)
-                    .Select(v => double.TryParse(v, out var parsed) ? parsed : (double?)null)
-                    .Where(v => v != null)
-                    .Select(v => UnitConverter.HalfPointsToPt((int)v!.Value))
-                    .ToList();
-
-                if (runSizes.Count > 0)
+            var contentRuns = paragraph.Descendants<Run>()
+                .Where(r => !string.IsNullOrEmpty(r.InnerText))
+                .Where(r => !r.Descendants<FieldChar>().Any())
+                .Where(r => !r.Descendants<FieldCode>().Any())
+                .Where(r => !r.Ancestors<Drawing>().Any())
+                .Where(r =>
                 {
-                    fontSizes.AddRange(runSizes);
-                    continue;
-                }
-            }
+                    var font = r.RunProperties?.RunFonts?.Ascii?.Value;
+                    return font == null || excludeFontFilters == null ||
+                           !excludeFontFilters.Any(f => font.Contains(f));
+                })
+                .ToList();
 
-            var fromStyle = StyleResolver.ResolveFontSize(document, effectiveStyleId);
-            if (fromStyle != null)
+            var directSizes = contentRuns
+                .Where(r => r.RunProperties?.FontSize?.Val?.Value != null)
+                .Select(r => double.TryParse(r.RunProperties!.FontSize!.Val!.Value, out var p) ? p : (double?)null)
+                .Where(v => v != null)
+                .Select(v => UnitConverter.HalfPointsToPt((int)v!.Value))
+                .ToList();
+
+            if (directSizes.Count > 0)
             {
-                fontSizes.Add(UnitConverter.HalfPointsToPt((int)fromStyle));
+                fontSizes.AddRange(directSizes);
+            }
+            else
+            {
+                var fromStyle = StyleResolver.ResolveFontSize(document, effectiveStyleId);
+                if (fromStyle != null)
+                {
+                    fontSizes.Add(UnitConverter.HalfPointsToPt((int)fromStyle));
+                }
             }
         }
 

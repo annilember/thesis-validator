@@ -49,26 +49,26 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         WordprocessingDocument document,
         NumericRule rule)
     {
-        var actualValues = (rule.Target, rule.Property) switch
+        var (actualValues, countContext) = (rule.Target, rule.Property) switch
         {
-            (ERuleTarget.Page, ERuleProperty.MarginTop) => _docxParsingService.GetPageMarginTop(document, rule.Unit),
-            (ERuleTarget.Page, ERuleProperty.MarginBottom) => _docxParsingService.GetPageMarginBottom(document,
-                rule.Unit),
-            (ERuleTarget.Page, ERuleProperty.MarginLeft) => _docxParsingService.GetPageMarginLeft(document, rule.Unit),
+            (ERuleTarget.Page, ERuleProperty.MarginTop) =>
+                (_docxParsingService.GetPageMarginTop(document, rule.Unit), "vead loendatud sektsioonide kaupa"),
+            (ERuleTarget.Page, ERuleProperty.MarginBottom) =>
+                (_docxParsingService.GetPageMarginBottom(document, rule.Unit), "vead loendatud sektsioonide kaupa"),
+            (ERuleTarget.Page, ERuleProperty.MarginLeft) =>
+                (_docxParsingService.GetPageMarginLeft(document, rule.Unit), "vead loendatud sektsioonide kaupa"),
             (ERuleTarget.Page, ERuleProperty.MarginRight) =>
-                _docxParsingService.GetPageMarginRight(document, rule.Unit),
-            (ERuleTarget.Page, ERuleProperty.MarginFooter) => _docxParsingService.GetPageMarginFooter(document,
-                rule.Unit),
-            (ERuleTarget.Paragraph, ERuleProperty.FontSize) => _docxParsingService.GetParagraphFontSizes(
-                document,
-                rule.StyleFilters,
-                rule.FontFilters),
-            (ERuleTarget.Table, ERuleProperty.FontSize)
-                => _docxParsingService.GetTableCellFontSizes(document, rule.AfterSectionTitle, rule.BeforeSectionTitle),
-            _ => null
+                (_docxParsingService.GetPageMarginRight(document, rule.Unit), "vead loendatud sektsioonide kaupa"),
+            (ERuleTarget.Page, ERuleProperty.MarginFooter) =>
+                (_docxParsingService.GetPageMarginFooter(document, rule.Unit), "vead loendatud sektsioonide kaupa"),
+            (ERuleTarget.Paragraph, ERuleProperty.FontSize) =>
+                (_docxParsingService.GetParagraphFontSizes(document, rule.StyleFilters, rule.FontFilters, rule.ExcludeFontFilters), "vead loendatud tekstijooksude kaupa"),
+            (ERuleTarget.Table, ERuleProperty.FontSize) =>
+                (_docxParsingService.GetTableCellFontSizes(document, rule.AfterSectionTitle, rule.BeforeSectionTitle), "vead loendatud tabeli ruutude kaupa"),
+            _ => (null, null)
         };
 
-        return RuleEvaluator.EvaluateNumeric(rule, actualValues);
+        return RuleEvaluator.EvaluateNumeric(rule, actualValues, countContext);
     }
 
     protected override async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document,
