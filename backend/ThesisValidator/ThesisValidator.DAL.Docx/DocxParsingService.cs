@@ -4,6 +4,7 @@ using DocumentFormat.OpenXml.Wordprocessing;
 using ThesisValidator.Domain.Enums;
 using Microsoft.Extensions.Logging;
 using ThesisValidator.DAL.Interfaces;
+using ThesisValidator.Domain.Models;
 
 namespace ThesisValidator.DAL.Docx;
 
@@ -217,6 +218,11 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
         paragraphs = paragraphs.Where(p =>
         {
+            if (p.Descendants<Drawing>().Any())
+            {
+                return false;
+            }
+
             var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
 
             if (styleFilters != null && styleFilters.Count > 0)
@@ -292,7 +298,7 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             .ToList();
     }
 
-    public List<int> GetParagraphCountsPerSubsection(WordprocessingDocument document)
+    public List<ItemCount> GetParagraphCountsPerSubsection(WordprocessingDocument document)
     {
         var body = document.MainDocumentPart?.Document?.Body;
         if (body == null)
@@ -300,8 +306,9 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             return [];
         }
 
-        var counts = new List<int>();
+        var counts = new List<ItemCount>();
         var currentCount = 0;
+        string? currentTitle = null;
         var inSubsection = false;
 
         foreach (var element in body.ChildElements)
@@ -309,36 +316,40 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
             if (element is Paragraph paragraph)
             {
                 var styleId = paragraph.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
+                var text = paragraph.InnerText.Trim();
 
                 if (DocxStyles.SubHeadings.Contains(styleId))
                 {
                     if (inSubsection)
                     {
-                        counts.Add(currentCount);
+                        counts.Add(new ItemCount(currentTitle, currentCount));
                     }
 
                     currentCount = 0;
+                    currentTitle = text;
                     inSubsection = true;
                 }
                 else if (DocxStyles.Level1Headings.Contains(styleId))
                 {
                     if (inSubsection)
                     {
-                        counts.Add(currentCount);
+                        counts.Add(new ItemCount(currentTitle, currentCount));
                     }
 
                     currentCount = 0;
+                    currentTitle = null;
                     inSubsection = false;
                 }
                 else if (inSubsection && (styleId == DocxStyles.Normal || styleId == null))
                 {
-                    if (!string.IsNullOrWhiteSpace(paragraph.InnerText))
+                    if (!string.IsNullOrWhiteSpace(paragraph.InnerText) ||
+                        (currentCount > 0 && paragraph.Descendants<Drawing>().Any()))
                     {
                         currentCount++;
                     }
                 }
             }
-            else if (inSubsection && element is Table)
+            else if (inSubsection && element is Table && currentCount > 0)
             {
                 currentCount++;
             }
@@ -346,7 +357,7 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
 
         if (inSubsection)
         {
-            counts.Add(currentCount);
+            counts.Add(new ItemCount(currentTitle, currentCount));
         }
 
         return counts;

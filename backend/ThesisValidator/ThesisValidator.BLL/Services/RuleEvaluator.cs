@@ -3,6 +3,7 @@ using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
 using ThesisValidator.Domain;
 using ThesisValidator.Domain.Enums;
+using ThesisValidator.Domain.Models;
 using ThesisValidator.Domain.Rules;
 
 namespace ThesisValidator.BLL.Services;
@@ -107,14 +108,15 @@ public class RuleEvaluator : IRuleEvaluator
             $"Vale formaat leitud: {string.Join(", ", violations)}");
     }
 
-    public ValidationIssue EvaluateCount(CountRule rule, int? actualCount)
+    public ValidationIssue EvaluateCount(CountRule rule, ItemCount? actualCount)
     {
-        if (actualCount == null)
+        if (actualCount == null || actualCount.Count <= 0)
         {
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
-        var countIsInBounds = actualCount >= rule.MinValue && (rule.MaxValue == null || actualCount <= rule.MaxValue);
+        var countIsInBounds = actualCount.Count >= rule.MinValue &&
+                              (rule.MaxValue == null || actualCount.Count <= rule.MaxValue);
 
         if (countIsInBounds)
         {
@@ -127,25 +129,30 @@ public class RuleEvaluator : IRuleEvaluator
         var unitStr = rule.Unit != null ? $" {rule.Unit.Value.ToDisplayString()}" : "";
 
         return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
-            $"Leitud {actualCount}{unitStr}, oodatav: {expected}{unitStr}");
+            $"Leitud {actualCount.Count}{unitStr}, oodatav: {expected}{unitStr}");
     }
 
-    public ValidationIssue EvaluateCount(CountRule rule, List<int>? actualCounts)
+    public ValidationIssue EvaluateCount(CountRule rule, List<ItemCount>? actualCounts)
     {
         if (actualCounts == null || actualCounts.Count == 0)
         {
             return ValidationIssue.CreateSkipped(rule.RuleId, rule.Message, "Väärtust ei leitud dokumendist");
         }
 
-        var violations = actualCounts.Count(c => c < rule.MinValue);
+        var violations = actualCounts.Where(c => c.Count < rule.MinValue).ToList();
 
-        if (violations == 0)
+        if (violations.Count == 0)
         {
             return ValidationIssue.CreatePassed(rule.RuleId, rule.Description);
         }
 
-        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity,
-            $"Leitud {violations} alampeatükki, milles on vähem kui {rule.MinValue} lõiku");
+        var hasNames = violations.Any(v => !string.IsNullOrWhiteSpace(v.ItemName));
+
+        var details = hasNames
+            ? $"Leitud {violations.Count} rikkumist: {string.Join(", ", violations.Select(v => $"\"{v.ItemName}\""))}"
+            : $"Leitud {violations.Count} rikkumist";
+
+        return ValidationIssue.CreateFailed(rule.RuleId, rule.Message, rule.Severity, details);
     }
 
     public ValidationIssue EvaluateOrder(OrderRule rule, List<string>? actualOrder)

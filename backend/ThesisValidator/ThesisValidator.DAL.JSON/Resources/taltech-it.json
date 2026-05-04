@@ -260,8 +260,8 @@
       "property": "paragraphCount",
       "minValue": 2,
       "severity": "warning",
-      "description": "Alampeatüki sisu pikkus on vähemalt 2 lõiku",
-      "message": "Alampeatükk peaks sisaldama rohkem kui ühte lõiku"
+      "description": "Alapeatüki sisu pikkus on vähemalt 2 lõiku",
+      "message": "Alapeatükk peaks sisaldama rohkem kui ühte lõiku"
     },
     {
       "ruleId": "O-001",

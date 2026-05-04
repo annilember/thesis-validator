@@ -2,12 +2,13 @@ using Syncfusion.DocIO;
 using Syncfusion.DocIO.DLS;
 using Syncfusion.DocIORenderer;
 using ThesisValidator.DAL.Interfaces;
+using ThesisValidator.Domain.Models;
 
 namespace ThesisValidator.DAL.Docx;
 
 public class DocxRenderingService : IDocumentRenderingService
 {
-    public int GetPageCount(Stream document, string? startTitle, string? endTitle)
+    public ItemCount GetPageCount(Stream document, string? startTitle, string? endTitle)
     {
         document.Position = 0;
         using var wordDocument = new WordDocument(document, FormatType.Docx);
@@ -65,6 +66,6 @@ public class DocxRenderingService : IDocumentRenderingService
         using var renderer = new DocIORenderer();
         using var pdfDocument = renderer.ConvertToPDF(wordDocument);
 
-        return pdfDocument.Pages.Count;
+        return new ItemCount(null, pdfDocument.Pages.Count);
     }
 }

@@ -1,6 +1,8 @@
+using ThesisValidator.Domain.Models;
+
 namespace ThesisValidator.DAL.Interfaces;
 
 public interface IDocumentRenderingService
 {
-    int GetPageCount(Stream document, string? startTitle, string? endTitle);
+    ItemCount GetPageCount(Stream document, string? startTitle, string? endTitle);
 }

@@ -1,4 +1,5 @@
 using ThesisValidator.Domain.Enums;
+using ThesisValidator.Domain.Models;
 
 namespace ThesisValidator.DAL.Interfaces;
 
@@ -19,7 +20,7 @@ public interface IDocumentParsingService<in TDocument>
         string? afterSectionTitle = null,
         string? beforeSectionTitle = null);
     List<string> GetParagraphTexts(TDocument document, List<string>? styleFilters);
-    List<int> GetParagraphCountsPerSubsection(TDocument document);
+    List<ItemCount> GetParagraphCountsPerSubsection(TDocument document);
     List<string> GetSectionTitles(TDocument document, string? startFromHeading = null, string? endWithHeading = null);
     List<string> GetGlossaryTerms(TDocument document, string sectionTitle);
     string GetBodyText(TDocument document, string? afterSectionTitle = null, string? beforeSectionTitle = null);

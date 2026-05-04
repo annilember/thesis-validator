@@ -1,6 +1,7 @@
 using ThesisValidator.BLL.Models;
 using ThesisValidator.Domain;
 using ThesisValidator.Domain.Enums;
+using ThesisValidator.Domain.Models;
 using ThesisValidator.Domain.Rules;
 
 namespace ThesisValidator.BLL.Interfaces;
@@ -21,9 +22,9 @@ public interface IRuleEvaluator
 
     ValidationIssue EvaluateRegex(RegexRule rule, List<string>? actualValues, string? reason = null);
 
-    ValidationIssue EvaluateCount(CountRule rule, int? actualCount);
+    ValidationIssue EvaluateCount(CountRule rule, ItemCount? actualCount);
 
-    ValidationIssue EvaluateCount(CountRule rule, List<int>? actualCounts);
+    ValidationIssue EvaluateCount(CountRule rule, List<ItemCount>? actualCounts);
 
     ValidationIssue EvaluateOrder(OrderRule rule, List<string>? actualOrder);
 
