@@ -22,4 +22,26 @@ Prototypal web application for automated validation of structure and formatting 
 
 
 # Getting started
-Coming soon...
+
+## Live demo
+https://thesis-validator-frontend-production.up.railway.app/
+
+## Local development
+
+### Prerequisites
+- .NET 10
+- Node.js 20+
+- Docker (optional)
+
+### Backend
+* `cd backend/ThesisValidator`
+* `dotnet run --project ThesisValidator.Api`
+
+### Frontend
+* `cd frontend/thesis-validator-frontend`
+* `npm install`
+* `npm run dev`
+
+### Docker
+* `docker-compose up -d`
+* `docker-compose down`

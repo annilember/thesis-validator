@@ -8,19 +8,14 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - Cors__AllowedOrigins__0=http://localhost:3000
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/api/health" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   frontend:
     build:
       context: ./frontend/thesis-validator-frontend
       args:
         - VITE_API_URL=/api/
+        - NGINX_CONF=nginx.conf.local
     ports:
       - "3000:80"
     depends_on:
-      backend:
-        condition: service_healthy
+      - backend
