@@ -42,7 +42,6 @@ public class JsonRuleRepository : IRuleRepository
 
     public async Task<ValidationTemplate?> GetTemplateAsync(string templateId)
     {
-        // TODO: look again if this can be implemented with existing serialization options, not raw switching.
         var filePath = Path.Combine(_resourcesPath, $"{templateId}.json");
 
         if (!File.Exists(filePath))

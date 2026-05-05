@@ -2,7 +2,6 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using ThesisValidator.Domain.Enums;
-using Microsoft.Extensions.Logging;
 using ThesisValidator.DAL.Interfaces;
 using ThesisValidator.Domain.Models;
 
@@ -10,13 +9,6 @@ namespace ThesisValidator.DAL.Docx;
 
 public class DocxParsingService : IDocumentParsingService<WordprocessingDocument>
 {
-    private readonly ILogger<DocxParsingService> _logger;
-
-    public DocxParsingService(ILogger<DocxParsingService> logger)
-    {
-        _logger = logger;
-    }
-
     public List<double> GetPageMarginLeft(WordprocessingDocument document, EUnit unit) =>
         GetPageMargins(document, unit, m => m.Left?.Value);
 
@@ -584,9 +576,6 @@ public class DocxParsingService : IDocumentParsingService<WordprocessingDocument
         {
             var styleId = p.ParagraphProperties?.ParagraphStyleId?.Val?.Value;
             var fontFromStyle = StyleResolver.ResolveFont(document, styleId);
-
-            // TODO: Currently only the first run's font is checked. For more accurate
-            // validation, all runs should be checked as a paragraph may contain mixed fonts.
             var fontFromRun = p.Descendants<Run>()
                 .Select(r => r.RunProperties?.RunFonts?.Ascii?.Value)
                 .FirstOrDefault(f => f != null);

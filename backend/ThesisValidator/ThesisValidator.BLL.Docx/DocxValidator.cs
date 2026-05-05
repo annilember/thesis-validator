@@ -1,5 +1,4 @@
 using DocumentFormat.OpenXml.Packaging;
-using Microsoft.Extensions.Logging;
 using ThesisValidator.BLL.Interfaces;
 using ThesisValidator.BLL.Models;
 using ThesisValidator.BLL.Services;
@@ -15,19 +14,16 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
     private readonly IDocumentParsingService<WordprocessingDocument> _docxParsingService;
     private readonly ILanguageDetectionService _languageDetectionService;
     private readonly IDocumentRenderingService _renderingService;
-    private readonly ILogger<DocxValidator> _logger;
 
     public DocxValidator(
         IRuleEvaluator ruleEvaluator,
         IDocumentParsingService<WordprocessingDocument> docxParsingService,
         ILanguageDetectionService languageDetectionService,
-        IDocumentRenderingService renderingService,
-        ILogger<DocxValidator> logger) : base(ruleEvaluator)
+        IDocumentRenderingService renderingService) : base(ruleEvaluator)
     {
         _docxParsingService = docxParsingService;
         _languageDetectionService = languageDetectionService;
         _renderingService = renderingService;
-        _logger = logger;
     }
 
     public override bool CanValidate(string fileExtension)
@@ -45,7 +41,7 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
         return await ValidateRulesAsync(wordDocument, memoryStream, rules);
     }
 
-    protected override async Task<ValidationIssue> ValidateNumericRuleAsync(
+    protected override Task<ValidationIssue> ValidateNumericRuleAsync(
         WordprocessingDocument document,
         NumericRule rule)
     {
@@ -68,10 +64,10 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
             _ => (null, null)
         };
 
-        return RuleEvaluator.EvaluateNumeric(rule, actualValues, countContext);
+        return Task.FromResult(RuleEvaluator.EvaluateNumeric(rule, actualValues, countContext));
     }
 
-    protected override async Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document,
+    protected override Task<ValidationIssue> ValidateBooleanRuleAsync(WordprocessingDocument document,
         BooleanRule rule)
     {
         var actualValues = (rule.Target, rule.Property) switch
@@ -81,7 +77,7 @@ public class DocxValidator : DocumentValidatorBase<WordprocessingDocument>
             _ => null
         };
 
-        return RuleEvaluator.EvaluateBoolean(rule, actualValues);
+        return Task.FromResult(RuleEvaluator.EvaluateBoolean(rule, actualValues));
     }
 
     protected override Task<ValidationIssue> ValidateEnumRuleAsync(WordprocessingDocument document, EnumRule rule)

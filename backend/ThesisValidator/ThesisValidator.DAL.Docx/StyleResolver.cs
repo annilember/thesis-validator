@@ -64,7 +64,6 @@ public static class StyleResolver
         return ResolveAlignment(document, style.BasedOn?.Val?.Value);
     }
 
-    // TODO: kontrolli ka kohandatud stiile mis on baseeritud styleFilters stiilidel.
     private static T? ResolveProperty<T>(
         WordprocessingDocument document,
         string? styleId,
