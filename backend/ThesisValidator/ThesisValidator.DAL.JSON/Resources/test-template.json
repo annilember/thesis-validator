@@ -10,12 +10,12 @@
       "enabled": true,
       "target": "page",
       "property": "marginTop",
-      "expectedValue": 2.5,
+      "expectedValue": 5.0,
       "unit": "cm",
       "tolerance": 0.05,
       "severity": "error",
-      "description": "Ülemine veeris 2,5 cm",
-      "message": "Ülemine veeris peab olema 2,5 cm"
+      "description": "Ülemine veeris 5,0 cm",
+      "message": "Ülemine veeris peab olema 5,0 cm"
     }
   ]
 }
